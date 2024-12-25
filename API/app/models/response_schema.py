@@ -11,6 +11,5 @@ class OfferResponse(BaseResponse):
     result: list[Offer]
 
 class OfferRequest(BaseModel):
-    category: str | None = None
-    state: str | None = None
-    city: str | None = None
+    category_id: str | None = None
+    city_id: str | None = None

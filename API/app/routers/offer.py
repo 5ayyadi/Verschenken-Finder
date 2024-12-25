@@ -16,11 +16,10 @@ router = APIRouter()
 @router.post("/create/", response_model=OfferResponse, dependencies=[Depends(api_key_required)])
 async def create_offer(request: OfferRequest):
     """
-        This Function creates an offer object
-        and then adds it to Offers collection.
+    Find and create offers based on the given category and city id.
     """
     # TODO: post it to the channel
-    offers = find_offers(category=request.category, state_city=(request.state,request.city))
+    offers = find_offers(category_id=request.category_id, city_id=request.city_id)
     # add to the database
     offer_collection = MongoDBClient.get_client().get_database("KleineAnzeigen").get_collection("Offer")
     offer_collection.insert_many(offers)
@@ -30,8 +29,8 @@ async def create_offer(request: OfferRequest):
 
 @router.get("/read/", response_model=OfferResponse)
 async def read_offers(
-    city: str | str = None,  # Filter by city
-    category: str | str = None,  # Filter by category
+    city_id: str | str = None,  # Filter by city
+    category_id: str | str = None,  # Filter by category
 ):
     """This function returns filtered offers based on query parameters.
 
@@ -46,10 +45,10 @@ async def read_offers(
     
     # Build the filter criteria
     filter_criteria = {}
-    if city:
-        filter_criteria["location"] = city
-    if category:
-        filter_criteria["category"] = category  # Assuming offers have a category field
+    if city_id:
+        filter_criteria["city_id"] = city_id
+    if category_id:
+        filter_criteria["category_id"] = category_id  # Assuming offers have a category field
     
     # Query MongoDB based on filter criteria
     query = offer_collection.find(filter_criteria)

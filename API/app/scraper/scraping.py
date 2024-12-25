@@ -1,12 +1,12 @@
 from bs4 import BeautifulSoup
 from .constants import BASE_URL
-from .utils import parse_verschenken_offer, get_category_id, get_city_id
+from .utils.parse_data import parse_verschenken_offer
 import requests
 
 
 
 # def find by category and state_city, if none given find all
-def find_offers(category: str = None,state_city: tuple[str ,str] = None) -> list[dict]:
+def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
     """scrap and find offers based on given filters
 
     Args:
@@ -16,26 +16,15 @@ def find_offers(category: str = None,state_city: tuple[str ,str] = None) -> list
     Returns:
         list[dict]: list of offers
     """
+    
     # TODO: due to being sorted by price, after a few offers, the priced ones will come
     # so you can stop it - and also go to next page
  
     
-    URL = f"{BASE_URL}/sortierung:preis/"
-    category_id = None
-    city_id = None
-    
-    if category:
-        category_id = get_category_id(category)  
-        URL =f"{URL}{category_id}" 
-        
-        
-    if state_city != (None,None):
-        state, city = state_city
-        city_id = get_city_id(state=state, city=city)
-        URL = f"{URL}{city_id}"
-        
     # scrapping url
-    
+    URL = f"{BASE_URL}/sortierung:preis/"
+    URL += "{category_id}{city_id}"
+
     webpage = requests.get(URL)
     soup = BeautifulSoup(webpage.text, 'html.parser')
     
