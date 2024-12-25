@@ -1,6 +1,6 @@
 from bs4 import BeautifulSoup
-from .constants import BASE_URL
-from .utils.parse_data import parse_verschenken_offer
+from core.constants import BASE_URL
+from utils.parse_data import parse_verschenken_offer
 import requests
 
 

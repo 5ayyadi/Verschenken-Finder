@@ -29,20 +29,3 @@ CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS = range(6)
 GENERAL_KEYBOARD = [
     ["Back", "Done"]
 ]
-
-# Helper functions
-def facts_to_str(user_data: dict[str, str]) -> str:
-    """Helper function for formatting the search prefrence."""
-    facts = [f"{key} - {value}" for key, value in user_data.items()]
-    return "\n".join(facts).join(["\n", "\n"])
-
-def create_user_data() -> dict[str, str]:
-    """Create a dictionary to store the user's search prefrence."""
-    return {
-        "category": None,
-        "sub_category": None,
-        "category_id": None,
-        "state": None,
-        "city": None,
-        "city_id": None
-    }

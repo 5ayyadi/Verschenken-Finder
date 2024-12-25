@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 from pydantic import ValidationError, HttpUrl
 from datetime import date
-from ...models.offer import Offer
-from ..constants import BASE_URL
-from utils.time_formater import time_to_date
+from models.offer import Offer
+from core.constants import BASE_URL
+from utils.helper import time_to_date
 
 def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     # Scraping Title
