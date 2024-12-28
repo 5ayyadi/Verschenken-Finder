@@ -1,6 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.config import STATE, CATEGORY, CHOOSING, CITIES_DICT, CATEGORIES_DICT, GENERAL_KEYBOARD
+from core.constants import STATE, CATEGORY, CHOOSING, CITIES_DICT, CATEGORIES_DICT, GENERAL_KEYBOARD
 
 
 async def choosing(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:

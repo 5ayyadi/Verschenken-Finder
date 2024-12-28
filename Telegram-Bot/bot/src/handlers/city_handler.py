@@ -1,6 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.config import RESULTS, GENERAL_KEYBOARD, CATEGORIES_DICT, CATEGORY, CITIES_DICT
+from core.constants import RESULTS, GENERAL_KEYBOARD, CATEGORIES_DICT, CATEGORY, CITIES_DICT
 
 async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the city choice."""

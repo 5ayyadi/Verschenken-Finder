@@ -1,5 +1,4 @@
 import logging
-import os
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, filters
 from handlers import (
@@ -11,8 +10,9 @@ from handlers import (
     city,
     results,
 )
-from core.config import TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
-from core.db import MongoDBClient
+from core.constants import TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
+from core.mongo_client import MongoDBClient
+from core.redis_client import RedisClient
 
 # Enable logging
 logging.basicConfig(
@@ -23,24 +23,22 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-# Database connection URI
-MONGO_URI = os.getenv("MONGO_URI") or "mongodb://localhost:27017"
+async def start_services(application):
+    """Start db and worker services."""
+    await MongoDBClient.start_mongo()
+    await RedisClient.start_redis()
 
-async def start_mongo():
-    MongoDBClient.initialize(MONGO_URI)
-    logging.info("MongoDB server is started")
-
-async def stop_mongo():
-    client = MongoDBClient.get_client()
-    client.close()
-    logging.info("MongoDB server is stopped")
+async def stop_services(application):
+    """Stop db and worker services."""
+    await RedisClient.stop_redis()
+    await MongoDBClient.stop_mongo()
 
 def main() -> None:
     """Run the bot and start MongoDB."""
     
-    # Create the Application instance which starts mongodb 
+    # Create the Application instance which starts services
     # before the bot starts and stops it after the bot stops
-    application = ApplicationBuilder().token(TOKEN).post_init(start_mongo).post_shutdown(stop_mongo).build()
+    application = ApplicationBuilder().token(TOKEN).post_init(start_services).post_shutdown(stop_services).build()
 
     # Add conversation handler with 6 states 
     conv_handler = ConversationHandler(

@@ -1,5 +1,5 @@
 from bson import ObjectId
-from ..core.db import MongoDBClient
+from core.mongo_client import MongoDBClient
 from utils.scraper import find_offers
 
 async def create_offers(category_id: str, city_id: str):

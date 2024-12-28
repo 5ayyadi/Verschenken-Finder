@@ -1,6 +1,6 @@
 from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
-from utils.config import STATE, RESULTS, GENERAL_KEYBOARD, CATEGORIES_DICT, CITIES_DICT
+from core.constants import STATE, RESULTS, GENERAL_KEYBOARD, CATEGORIES_DICT, CITIES_DICT
 
 async def sub_category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the sub-category choice."""
