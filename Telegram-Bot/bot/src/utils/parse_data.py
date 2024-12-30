@@ -3,7 +3,8 @@ from pydantic import ValidationError, HttpUrl
 from datetime import date
 from models.offer import Offer
 from core.constants import BASE_URL
-from utils.helper import time_to_date
+from utils.time_formater import time_to_date
+from utils.object_creator import create_location, create_category
 
 def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     # Scraping Title
@@ -14,9 +15,9 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     description_tag = offer.find("p", class_="aditem-main--middle--description")
     description = description_tag.text.strip() if description_tag else ""
     
-    # Scraping location (Zipcode)
-    location_tag = offer.find("div", class_="aditem-main--top--left")
-    location = location_tag.text.strip() if location_tag else ""
+    # Scraping address (Zipcode)
+    address_tag = offer.find("div", class_="aditem-main--top--left")
+    address = address_tag.text.strip() if address_tag else ""
 
     # Scraping time of the offer
     time_tag = offer.find("div", class_="aditem-main--top--right")
@@ -48,7 +49,10 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     price_tag = offer.find("p", class_="aditem-main--middle--price-shipping--price")
     price = price_tag.text.strip() if price_tag else ""
 
-    # Scraping city_id and category_id (assuming they are available in the offer)
+    # create location and category objects
+    location = create_location()
+    category = create_category()
+    
     city_id = offer.get("data-city-id", "default_city_id")
     category_id = offer.get("data-category-id", "default_category_id")
 
@@ -60,7 +64,7 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
                 _id=_id,
                 title=title,
                 description=description,
-                location=location,
+                address=address,
                 link=HttpUrl(link),
                 offer_date=offer_date,
                 photos=[HttpUrl(photo) for photo in photos],

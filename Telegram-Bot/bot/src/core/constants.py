@@ -30,6 +30,8 @@ GENERAL_KEYBOARD = [
     ["Back", "Done"]
 ]
 
+# Telegram Channel Username
+CHANNEL_ID = "@verschenken_finder"
 
 # Base URL for scraping
 BASE_URL = "https://www.kleinanzeigen.de"
