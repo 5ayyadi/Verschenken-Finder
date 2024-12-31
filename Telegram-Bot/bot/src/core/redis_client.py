@@ -5,6 +5,7 @@ import os
 import logging
 
 #TODO: make constants for the db numbers
+from core.constants import USER_PREFERENCES_DB, CHAT_IDS_DB
 
 class RedisClient:
     _instance = None
@@ -51,13 +52,21 @@ class RedisClient:
         if city_id is None:
             city_id = ""
         value = f"{category_id}#{city_id}"
-        cls.get_db(0).sadd(name=user_id, value=value)
-        return cls.get_db(0).smembers(name=user_id)
+        cls.get_db(USER_PREFERENCES_DB).sadd(name=user_id, value=value)
+        return cls.get_db(USER_PREFERENCES_DB).smembers(name=user_id)
 
     @classmethod
     def get_user_preference(cls, user_id: str) -> set:
-        return cls.get_db(0).smembers(name=user_id)
+        return cls.get_db(USER_PREFERENCES_DB).smembers(name=user_id)
     
+    @classmethod
+    def update_user_preference(cls, user_id: str, preference: str):
+        cls.get_db(USER_PREFERENCES_DB).srem(name=user_id, values=preference)
+        
+    @classmethod
+    def remove_all_user_preferences(cls, user_id: str):
+        cls.get_db(USER_PREFERENCES_DB).delete(user_id)
+        cls.add_user_preference(user_id, None, None)
     
     # a function to store category and city id as key and 
     # related chat_ids list as value
@@ -69,7 +78,7 @@ class RedisClient:
             city_id = ""
         key = f"{category_id}#{city_id}"
         # get the values set from redis
-        existing_value = cls.get_db(1).get(name=key)
+        existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
         if existing_value is None:
             # create a new value
             existing_value = set(chat_id)
@@ -77,7 +86,7 @@ class RedisClient:
             existing_value = set(existing_value)
             existing_value.add(chat_id)
         # set the new value
-        cls.get_db(1).set(name=key, value=existing_value)
+        cls.get_db(CHAT_IDS_DB).set(name=key, value=existing_value)
         
     @classmethod
     def get_chat_ids(cls, category_id: str, city_id: str):
@@ -86,7 +95,7 @@ class RedisClient:
         if city_id is None:
             city_id = ""
         key = f"{category_id}#{city_id}"
-        return set(cls.get_db(1).get(name=key))
+        return set(cls.get_db(CHAT_IDS_DB  ).get(name=key))
     
     
     @classmethod
@@ -96,7 +105,7 @@ class RedisClient:
             Keys: category_id#city_id
             Values: set of chat_ids
         """
-        db = cls.get_db(1)
+        db = cls.get_db(CHAT_IDS_DB)
         keys = db.keys()
         if not keys:
             return {}

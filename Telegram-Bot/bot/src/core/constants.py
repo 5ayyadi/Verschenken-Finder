@@ -17,10 +17,15 @@ if not TOKEN:
 # Load categories.json
 with open(os.path.join(os.path.dirname(__file__), "../data/categories.json"), "r", encoding="utf-8") as categories_file:
     CATEGORIES_DICT = json.load(categories_file)
-
 # Load cities.json
 with open(os.path.join(os.path.dirname(__file__), "../data/cities.json"), "r", encoding="utf-8") as cities_file:
     CITIES_DICT = json.load(cities_file)
+# Load location_id.json
+with open(os.path.join(os.path.dirname(__file__), "../data/location_id.json"), "r", encoding="utf-8") as location_id_file:
+    LOCATION_ID_DICT = json.load(location_id_file)
+# Load category_id.json
+with open(os.path.join(os.path.dirname(__file__), "../data/category_id.json"), "r", encoding="utf-8") as category_id_file:
+    CATEGORY_ID_DICT = json.load(category_id_file)
 
 # States of the conversation
 CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS = range(6)
@@ -40,4 +45,8 @@ BASE_URL = "https://www.kleinanzeigen.de"
 CATEGORY_URL = f"{BASE_URL}/s-kategorien.html"
 CITY_URL = f"{BASE_URL}/s-katalog-orte.html"
 
-
+## Redis Database Names
+# user -> list of category_id#city_id
+USER_PREFERENCES_DB = 0
+# category_id#city_id -> list of chat_ids
+CHAT_IDS_DB = 1

@@ -6,7 +6,6 @@ from core.constants import STATE, CATEGORY, CHOOSING, CITIES_DICT, CATEGORIES_DI
 async def choosing(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the user's choice."""
     text = update.message.text
-    
     if text == "Select State":
         states_keyboard = [[state] for state in CITIES_DICT.keys()]
         states_markup = ReplyKeyboardMarkup(states_keyboard, one_time_keyboard=True)

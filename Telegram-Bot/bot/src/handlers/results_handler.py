@@ -1,23 +1,27 @@
 from telegram import Update, ReplyKeyboardRemove
 from telegram.ext import ContextTypes, ConversationHandler
 from core.redis_client import RedisClient
+from utils.preference_id_format import preference_id_to_name
 
 
 async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Display the gathered info and end the conversation."""
-    user_data = context.user_data
     # user_id -> set of category_id#city_id
-    preferences = RedisClient.add_user_preference(user_id=update.message.chat_id,category_id=user_data.get("category_id"), city_id=user_data.get("city_id"))
-   
-   
+    # context.user_data = {
+    #    "category": category name
+    #    "city": city name
+    #    "state": state name
+    #    "subcategory": subcategory name
+    #   "subcategory_id": subcategory_id
+    #  "category_id": category_id
+    # }
+    
+    preferences = RedisClient.get_user_preference(user_id=update.message.chat_id)
+    reply_text = "Your search preferences are:"
+    reply_text += "\n".join(r for r in preference_id_to_name(preferences, pretify=True))
     await update.message.reply_text(
-        f"Your search preferences are: {preferences}",
+        reply_text,
         reply_markup=ReplyKeyboardRemove(),
     )
     
-    
-    # category_id, city_id -> chat_id for worker
-    # RedisClient.set_chat_ids(category_id=user_data.get("category_id"), city_id=user_data.get("city_id"), chat_id=update.message.chat_id)
-
-    user_data.clear()
     return ConversationHandler.END

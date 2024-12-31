@@ -1,16 +1,6 @@
 from models.offer import Category, Location 
 from core.constants import CATEGORIES_DICT, CITIES_DICT
 
-def create_user_data() -> dict[str, str]:
-    """Create a dictionary to store the user's search prefrence."""
-    return {
-        "category": None,
-        "sub_category": None,
-        "category_id": None,
-        "state": None,
-        "city": None,
-        "city_id": None
-    }
     
 def create_category_object(
     category_name: str = None, 

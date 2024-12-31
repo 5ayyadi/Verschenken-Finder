@@ -3,6 +3,9 @@ from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, filters
 from handlers import (
     start,
+    add,
+    remove,
+    reset,
     choosing,
     category,
     sub_category,
@@ -41,12 +44,13 @@ def main() -> None:
     application = ApplicationBuilder().token(TOKEN).post_init(start_services).post_shutdown(stop_services).build()
 
     # Add conversation handler with 6 states 
+    start_handler = CommandHandler("start", start)
+    results_handler = CommandHandler("show", results)
+    remove_handler = CommandHandler("remove", remove)
+    reset_handler = CommandHandler("reset", reset)
     conv_handler = ConversationHandler(
-        entry_points=[CommandHandler("start", start)],
+        entry_points=[CommandHandler("add", add)],
         states={
-            CHOOSING: [
-                MessageHandler(filters.Regex("^(Select Category|Select State)$"), choosing),
-            ],
             CATEGORY: [
                 MessageHandler(filters.Regex("^Back$"), choosing),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, category),
@@ -71,6 +75,10 @@ def main() -> None:
     )
 
     application.add_handler(conv_handler)
+    application.add_handler(start_handler)
+    application.add_handler(results_handler)
+    application.add_handler(remove_handler)
+    application.add_handler(reset_handler)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
