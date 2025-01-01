@@ -8,11 +8,11 @@ async def state(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     # store the state and its id in the user_data
     context.user_data["state"] = state
-    context.user_data["city_id"] = CITIES_DICT.get(state).get("id")
+    context.user_data["state_id"] = CITIES_DICT.get(state).get("id")
     
     cities = list(CITIES_DICT.get(state, []).get("cities", []).keys())
     cities_keyboard = GENERAL_KEYBOARD.copy()
-    cities_keyboard.append([f"All Offers of {state} State"])
+    cities_keyboard.append([f"All Cities of {state} State"])
 
     cities_keyboard += [cities[i:i + 2] for i in range(0, len(cities), 2)]
     cities_markup = ReplyKeyboardMarkup(cities_keyboard, one_time_keyboard=True)

@@ -86,7 +86,8 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
             elif "Zu verschenken" in price.text:
                 offer_item = offer.find_parent("article", class_="aditem")
                 parsed_offer = parse_verschenken_offer(offer_item)
-                
+                parsed_offer.location = location
+                parsed_offer.category = category
                 offer_dict = parsed_offer.model_dump()
                 results.append(offer_dict)
             else:

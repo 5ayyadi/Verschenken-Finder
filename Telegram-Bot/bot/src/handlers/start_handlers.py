@@ -18,14 +18,14 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Add a filter preference."""
-    reply_keyboard = [["Select Category", "Select State"]]
+    reply_keyboard = [["Select Category"], ["Select Location"]]
     markup = ReplyKeyboardMarkup(reply_keyboard, one_time_keyboard=True)
     await update.message.reply_text("Please choose a category or state:", reply_markup=markup)
     return CHOOSING
 
 async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Remove a filter preference."""
-    preferences = RedisClient.get_user_preference(user_id=update.message.chat_id)
+    preferences = RedisClient.get_user_preference(user_id=str(update.message.chat_id))
     result = preference_id_to_name(preferences, pretify=True)
     reply_markup = ReplyKeyboardMarkup(result, one_time_keyboard=True)
     await update.message.reply_text(
@@ -44,16 +44,7 @@ async def remove(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(    
             f"Preference {selected} removed successfully."
         )
-    
-async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    """Remove all filter preferences."""
-    reply_markup = ReplyKeyboardMarkup([["Reset", "Cancel"]])
-    await update.message.reply_text(
-        "Are you sure you want to remove all filter preferences? Type 'yes' to confirm.",
-        reply_markup=reply_markup,
-    )
-    await confirm_reset(update, context)
-
+ 
 async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Confirm reset of all filter preferences."""
     if update.message.text == 'Reset':
@@ -65,3 +56,14 @@ async def confirm_reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> i
         await update.message.reply_text(
             "Reset operation cancelled."
         )
+
+    
+async def reset(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Remove all filter preferences."""
+    reply_markup = ReplyKeyboardMarkup([["Reset", "Cancel"]])
+    await update.message.reply_text(
+        "Are you sure you want to remove all filter preferences? Type 'yes' to confirm.",
+        reply_markup=reply_markup,
+    )
+    await confirm_reset(update, context)
+

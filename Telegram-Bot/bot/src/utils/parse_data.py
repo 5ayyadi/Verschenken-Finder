@@ -1,10 +1,9 @@
 from bs4 import BeautifulSoup
 from pydantic import ValidationError, HttpUrl
 from datetime import date
-from models.offer import Offer
+from models.offer import Offer, Location, Category
 from core.constants import BASE_URL
 from utils.time_formater import time_to_date
-from utils.object_creator import create_location, create_category
 
 def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     # Scraping Title
@@ -50,12 +49,9 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     price = price_tag.text.strip() if price_tag else ""
 
     # create location and category objects
-    location = create_location()
-    category = create_category()
+    location = Location()
+    category = Category()
     
-    city_id = offer.get("data-city-id", "default_city_id")
-    category_id = offer.get("data-category-id", "default_category_id")
-
     # Check if the offer is "Zu verschenken"
     if price_tag and "Zu verschenken" in price_tag.text:
         # Create a Pydantic model instance
@@ -68,8 +64,8 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
                 link=HttpUrl(link),
                 offer_date=offer_date,
                 photos=[HttpUrl(photo) for photo in photos],
-                city_id=city_id,
-                category_id=category_id
+                location=location,
+                category=category
             )
             return offer_data
         except ValidationError as e:

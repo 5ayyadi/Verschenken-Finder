@@ -16,8 +16,19 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     #  "category_id": category_id
     # }
     
-    preferences = RedisClient.get_user_preference(user_id=update.message.chat_id)
-    reply_text = "Your search preferences are:"
+    category_id = context.user_data.get("category_id", "")
+    sub_category_id = context.user_data.get("sub_category_id","")
+    state_id = context.user_data.get("state_id","")
+    city_id = context.user_data.get("city_id","")
+    
+    preferences = RedisClient.add_user_preference(
+        user_id=update.effective_user.id,
+        category_id=category_id, 
+        sub_category_id=sub_category_id, 
+        state_id=state_id, 
+        city_id=city_id)
+    
+    reply_text = "Your search preferences are:\n"
     reply_text += "\n".join(r for r in preference_id_to_name(preferences, pretify=True))
     await update.message.reply_text(
         reply_text,

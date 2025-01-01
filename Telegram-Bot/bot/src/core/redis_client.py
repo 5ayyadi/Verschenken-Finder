@@ -46,27 +46,38 @@ class RedisClient:
         
     
     @classmethod
-    def add_user_preference(cls, user_id: str, category_id: str, city_id: str) -> set:
-        if category_id is None:
-            category_id = ""
-        if city_id is None:
-            city_id = ""
-        value = f"{category_id}#{city_id}"
-        cls.get_db(USER_PREFERENCES_DB).sadd(name=user_id, value=value)
-        return cls.get_db(USER_PREFERENCES_DB).smembers(name=user_id)
+    def add_user_preference(
+        cls, 
+        user_id: str,
+        **kwargs):
+        value = ""
+        # Ensure the order: state_id, city_id, category_id, sub_category_id
+        keys_order = ['state_id', 'city_id', 'category_id', 'sub_category_id']
+        for key in keys_order:
+            if kwargs[key] is not None:
+                value += f"{kwargs[key]}"
+                if key != keys_order[-1]:
+                    value += "#"
+        cls.get_db(USER_PREFERENCES_DB).sadd(user_id, value)
+        return cls.get_user_preference(user_id)
 
     @classmethod
-    def get_user_preference(cls, user_id: str) -> set:
-        return cls.get_db(USER_PREFERENCES_DB).smembers(name=user_id)
+    def get_user_preference(cls, user_id: str) -> list[str]:
+        result = cls.get_db(USER_PREFERENCES_DB).smembers(user_id)
+        return list(r.decode('utf-8') for r in result)
     
     @classmethod
-    def update_user_preference(cls, user_id: str, preference: str):
-        cls.get_db(USER_PREFERENCES_DB).srem(name=user_id, values=preference)
-        
+    def update_user_preference(cls, user_id: str, old_preference: str, new_preference: str):
+        db = cls.get_db(USER_PREFERENCES_DB)
+        if db.sismember(user_id, old_preference):
+            db.srem(user_id, old_preference)
+            db.sadd(user_id, new_preference)
+        else:
+            raise ValueError(f"Preference {old_preference} does not exist for user {user_id}")
     @classmethod
     def remove_all_user_preferences(cls, user_id: str):
         cls.get_db(USER_PREFERENCES_DB).delete(user_id)
-        cls.add_user_preference(user_id, None, None)
+        cls.add_user_preference(user_id)
     
     # a function to store category and city id as key and 
     # related chat_ids list as value

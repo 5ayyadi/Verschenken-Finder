@@ -6,15 +6,10 @@ async def sub_category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
     """Handles the sub-category choice."""
     sub_category = update.message.text
     
-    # if the choice is All Offers of the category
-    if sub_category == f"All Offers of {context.user_data['category']} Category":
-        context.user_data["sub_category"] = context.user_data["category"]
-    else:
+    if sub_category != f"All Offers of {context.user_data['category']} Category":
         context.user_data["sub_category"] = sub_category
         context.user_data["sub_category_id"] = CATEGORIES_DICT.get(context.user_data["category"]).get("subcategories").get(sub_category)
-        
     
-
     
     if context.user_data.get("state") is None:
         states_keyboard = [[state] for state in CITIES_DICT.keys()]

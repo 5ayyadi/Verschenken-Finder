@@ -17,9 +17,15 @@ def _pretifer(preference: dict) -> str:
             s += f"{preference.get('category')}"
     if preference.get("state"):
         if preference.get("city"):
-            s += f" in {preference.get('city')}, {preference.get('state')}"
+            if s:
+                s += f" in {preference.get('city')}, {preference.get('state')}"
+            else:
+                s += f"{preference.get('city')}, {preference.get('state')}"
         else:
-            s += f" in {preference.get('state')}"
+            if s:
+                s += f" in {preference.get('state')}"
+            else:
+                s += f"{preference.get('state')}"
     return s
 
 def preference_id_to_name(preference_ids: list, pretify: bool = False) -> list[dict|str]:
@@ -30,11 +36,6 @@ def preference_id_to_name(preference_ids: list, pretify: bool = False) -> list[d
             preference_ids (list): A list of preference ids in dict format.
             pretify (bool): If True, the results will be in string format.
     """
-    # example input: 
-    # c1#c2#l1#l2 -> category c1, subcategory c2, state l1, city l2
-    # c1#c2 -> category c1, subcategory c2
-    # c1#l1#l2 -> category c1, state l1, city l2
-
     for preference in preference_ids:
         preference_ids = preference.split("#")
         category_id = None

@@ -8,7 +8,7 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     
     # store the category and its id in the user_data
     context.user_data["category"] = category
-    context.user_data["sub_category_id"] = CATEGORIES_DICT.get(category).get("id")
+    context.user_data["category_id"] = CATEGORIES_DICT.get(category).get("id")
     
     sub_categories = list(CATEGORIES_DICT.get(category).get("subcategories").keys())
     sub_categories_keyboard = GENERAL_KEYBOARD.copy()

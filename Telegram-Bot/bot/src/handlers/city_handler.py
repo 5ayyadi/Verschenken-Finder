@@ -5,10 +5,7 @@ from core.constants import RESULTS, GENERAL_KEYBOARD, CATEGORIES_DICT, CATEGORY,
 async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the city choice."""
     city = update.message.text
-    
-    if city == f"All Offers of {context.user_data['state']} State":
-        context.user_data["city"] = context.user_data["state"]
-    else:
+    if city != f'All Cities of {context.user_data.get("state")} State':
         context.user_data["city"] = city
         context.user_data["city_id"] = CITIES_DICT.get(context.user_data["state"]).get("cities").get(city)
     

@@ -51,20 +51,25 @@ def main() -> None:
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("add", add)],
         states={
+            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing)],
             CATEGORY: [
                 MessageHandler(filters.Regex("^Back$"), choosing),
+                MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, category),
             ],
             SUB_CATEGORY: [
                 MessageHandler(filters.Regex("^Back$"), category),
+                MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, sub_category),
             ],
             STATE: [
                 MessageHandler(filters.Regex("^Back$"), choosing),
+                MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
             ],
             CITY: [
                 MessageHandler(filters.Regex("^Back$"), state),
+                MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
             ],
             RESULTS: [
