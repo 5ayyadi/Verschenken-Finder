@@ -9,7 +9,7 @@ async def choosing(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     if text == "Select Location":
         states_keyboard = [[state] for state in CITIES_DICT.keys()]
         states_markup = ReplyKeyboardMarkup(states_keyboard, one_time_keyboard=True)
-        await update.message.reply_text("Please choose a state:", reply_markup=states_markup)
+        await update.message.reply_text("Please choose a state or enter a zipcode:", reply_markup=states_markup)
         return STATE
     elif text == "Select Category":
         categories_keyboard = [[category] for category in CATEGORIES_DICT.keys()]

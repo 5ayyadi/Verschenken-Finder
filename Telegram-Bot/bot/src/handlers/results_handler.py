@@ -15,7 +15,7 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     #   "subcategory_id": subcategory_id
     #  "category_id": category_id
     # }
-    
+    zip_code = context.user_data.get("zip_code", "")
     category_id = context.user_data.get("category_id", "")
     sub_category_id = context.user_data.get("sub_category_id","")
     state_id = context.user_data.get("state_id","")
@@ -34,5 +34,8 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_text,
         reply_markup=ReplyKeyboardRemove(),
     )
+    
+    # clear the user_data
+    context.user_data.clear()
     
     return ConversationHandler.END

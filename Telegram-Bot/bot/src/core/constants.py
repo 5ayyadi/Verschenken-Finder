@@ -26,6 +26,8 @@ with open(os.path.join(os.path.dirname(__file__), "../data/location_id.json"), "
 # Load category_id.json
 with open(os.path.join(os.path.dirname(__file__), "../data/category_id.json"), "r", encoding="utf-8") as category_id_file:
     CATEGORY_ID_DICT = json.load(category_id_file)
+with open(os.path.join(os.path.dirname(__file__), "../data/zipcodes.json"), "r", encoding="utf-8") as zip_file:
+    ZIP_DICT = json.load(zip_file)
 
 # States of the conversation
 CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS = range(6)
