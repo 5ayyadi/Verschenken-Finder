@@ -70,7 +70,7 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
         category_location_dict = scrap_category_location(soup)
         category = create_category_object(
             category_name=category_location_dict.get("category"),
-            sub_category_name=category_location_dict.get("subcategory"),
+            subcategory_name=category_location_dict.get("subcategory"),
         )
         location = create_location_object(
             state_name=category_location_dict.get("state"),

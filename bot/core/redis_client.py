@@ -28,8 +28,9 @@ class RedisClient:
     
     @classmethod
     def get_db(cls, db: int) -> Redis:
-        if cls._redis_url is None:
-            raise ValueError("RedisClient has not been initialized. Call `initialize` first.")
+        if cls._instance is None:
+            redis_url = os.getenv("REDIS_URL")
+            cls.initialize(redis_url)
         return redis.from_url(url=cls._redis_url, db=db)
 
     @classmethod
@@ -53,18 +54,37 @@ class RedisClient:
         value = ""
         # Ensure the order: state_id, city_id, category_id, sub_category_id
         keys_order = ['state_id', 'city_id', 'category_id', 'sub_category_id']
+        state_city = []
+        category_subcategory = []
         for key in keys_order:
             if kwargs[key] is not None:
-                value += f"{kwargs[key]}"
-                if key != keys_order[-1]:
-                    value += "#"
+                if key in ['state_id', 'city_id']:
+                    state_city.append(kwargs[key])
+                else:
+                    category_subcategory.append(kwargs[key])
+        
+        value = "_".join(state_city) + "#" + "_".join(category_subcategory)
         cls.get_db(USER_PREFERENCES_DB).sadd(user_id, value)
         return cls.get_user_preference(user_id)
 
     @classmethod
-    def get_user_preference(cls, user_id: str) -> list[str]:
+    def get_user_preference(cls, user_id: str) -> dict[str,str]:
         result = cls.get_db(USER_PREFERENCES_DB).smembers(user_id)
-        return list(r.decode('utf-8') for r in result)
+        preferences = list()
+        for item in result:
+            state_city, category_subcategory = item.decode().split("#")
+            state_city_parts = state_city.split("_")
+            category_subcategory_parts = category_subcategory.split("_")
+            res_dict = {
+            "state_id": state_city_parts[0] if len(state_city_parts) > 0 else None,
+            "city_id": state_city_parts[1] if len(state_city_parts) > 1 else None,
+            "category_id": category_subcategory_parts[0] if len(category_subcategory_parts) > 0 else None,
+            "sub_category_id": category_subcategory_parts[1] if len(category_subcategory_parts) > 1 else None,
+            }
+            preferences.append(res_dict)
+        return preferences
+            
+            
     
     @classmethod
     def update_user_preference(cls, user_id: str, old_preference: str, new_preference: str):
