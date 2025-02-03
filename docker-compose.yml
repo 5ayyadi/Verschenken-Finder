@@ -18,14 +18,13 @@ services:
     restart: always
 
   celery:
-    image: python:3.9-slim # Using official Python image
+    build: .
     container_name: celery_worker
     depends_on:
       - redis
       - mongo
     volumes:
-      - .:/app # Mount the current directory to /app inside the container
-    working_dir: /app # Set the working directory for Celery
+      - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379/0
       - CELERY_RESULT_BACKEND=redis://redis:6379/0
@@ -34,10 +33,6 @@ services:
       - CELERY_RESULT_SERIALIZER=json
       - CELERY_TIMEZONE=Europe/Berlin
       - CELERY_ENABLE_UTC=True
-    command: >
-      bash -c "
-        celery -A tasks worker --loglevel=info
-      "
     restart: always
 
 volumes:
