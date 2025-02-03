@@ -37,10 +37,10 @@ def scrap_category_location(soup: BeautifulSoup) -> dict[str, str]:
                     category, subcategory = None, None
                     
     return {
-        "category": category,
-        "subcategory": subcategory,
-        "state": state,
-        "city": city
+        "category": category.strip() if category else None,
+        "subcategory": subcategory.strip() if subcategory else None,
+        "state": state.strip() if state else None,
+        "city": city.strip() if city else None
     }
       
 
@@ -72,6 +72,7 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
             category_name=category_location_dict.get("category"),
             subcategory_name=category_location_dict.get("subcategory"),
         )
+        
         location = create_location_object(
             state_name=category_location_dict.get("state"),
             city_name=category_location_dict.get("city"),
