@@ -1,4 +1,4 @@
-from handlers.start_handlers import start, add, remove, reset
+from handlers.start_handlers import start, add, remove, reset, confirm_remove
 from handlers.choosing_handler import choosing
 from handlers.category_handler import category
 from handlers.sub_category_handler import sub_category

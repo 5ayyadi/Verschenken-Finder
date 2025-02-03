@@ -5,6 +5,7 @@ from handlers import (
     start,
     add,
     remove,
+    confirm_remove,
     reset,
     choosing,
     category,
@@ -13,7 +14,7 @@ from handlers import (
     city,
     results,
 )
-from core.constants import TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
+from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
 from core.mongo_client import MongoDBClient
 from core.redis_client import RedisClient
 
@@ -50,30 +51,38 @@ def main() -> None:
     # Add conversation handler with 6 states
     start_handler = CommandHandler("start", start)
     results_handler = CommandHandler("show", results)
-    remove_handler = CommandHandler("remove", remove)
+    # remove_handler = CommandHandler("remove", remove)
+    remove_handler = ConversationHandler(
+        entry_points=[CommandHandler("remove", remove)],
+        states={
+            REMOVE: [MessageHandler(
+                filters.TEXT & ~filters.COMMAND, confirm_remove)]
+        },
+        fallbacks=[],
+    )
     reset_handler = CommandHandler("reset", reset)
     conv_handler = ConversationHandler(
         entry_points=[CommandHandler("add", add)],
         states={
-            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing)],
+            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing,),],
             CATEGORY: [
-                MessageHandler(filters.Regex("^Back$"), choosing),
+                # MessageHandler(filters.Regex("^Back$"), choosing),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, category),
             ],
             SUB_CATEGORY: [
-                MessageHandler(filters.Regex("^Back$"), category),
+                # MessageHandler(filters.Regex("^Back$"), category),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, sub_category),
             ],
             STATE: [
-                MessageHandler(filters.Regex("^Back$"), choosing),
+                # MessageHandler(filters.Regex("^Back$"), choosing),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
 
             ],
             CITY: [
-                MessageHandler(filters.Regex("^Back$"), state),
+                # MessageHandler(filters.Regex("^Back$"), state),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
             ],
