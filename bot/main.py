@@ -26,24 +26,28 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
+
 async def start_services(application):
     """Start db and worker services."""
     await MongoDBClient.start_mongo()
     await RedisClient.start_redis()
+
 
 async def stop_services(application):
     """Stop db and worker services."""
     await RedisClient.stop_redis()
     await MongoDBClient.stop_mongo()
 
+
 def main() -> None:
     """Run the bot and start MongoDB."""
-    
+
     # Create the Application instance which starts services
     # before the bot starts and stops it after the bot stops
-    application = ApplicationBuilder().token(TOKEN).post_init(start_services).post_shutdown(stop_services).build()
+    application = ApplicationBuilder().token(TOKEN).post_init(
+        start_services).post_shutdown(stop_services).build()
 
-    # Add conversation handler with 6 states 
+    # Add conversation handler with 6 states
     start_handler = CommandHandler("start", start)
     results_handler = CommandHandler("show", results)
     remove_handler = CommandHandler("remove", remove)
@@ -66,7 +70,7 @@ def main() -> None:
                 MessageHandler(filters.Regex("^Back$"), choosing),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
-                
+
             ],
             CITY: [
                 MessageHandler(filters.Regex("^Back$"), state),
@@ -87,6 +91,7 @@ def main() -> None:
     application.add_handler(reset_handler)
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
+
 
 if __name__ == "__main__":
     main()

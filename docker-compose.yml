@@ -1,0 +1,44 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    restart: always
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: always
+
+  celery:
+    image: python:3.9-slim # Using official Python image
+    container_name: celery_worker
+    depends_on:
+      - redis
+      - mongo
+    volumes:
+      - .:/app # Mount the current directory to /app inside the container
+    working_dir: /app # Set the working directory for Celery
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+      - CELERY_TASK_SERIALIZER=json
+      - CELERY_ACCEPT_CONTENT=json
+      - CELERY_RESULT_SERIALIZER=json
+      - CELERY_TIMEZONE=Europe/Berlin
+      - CELERY_ENABLE_UTC=True
+    command: >
+      bash -c "
+        celery -A tasks worker --loglevel=info
+      "
+    restart: always
+
+volumes:
+  mongo_data:
