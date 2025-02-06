@@ -1,5 +1,5 @@
 from bs4 import BeautifulSoup
-from pydantic import ValidationError, HttpUrl
+from pydantic import ValidationError
 from datetime import date
 from models.offer import Offer, Location, Category
 from core.constants import BASE_URL
@@ -17,23 +17,22 @@ def scrape_address(offer: BeautifulSoup) -> str:
     address_tag = offer.find("div", class_="aditem-main--top--left")
     return address_tag.text.strip() if address_tag else ""
 
-def scrape_time(offer: BeautifulSoup) -> date:
+def scrape_time(offer: BeautifulSoup) -> str:
     time_tag = offer.find("div", class_="aditem-main--top--right")
     time_str = time_tag.text.strip() if time_tag else ""
     try:
         return time_to_date(time_str)
     except ValueError:
-        return date.today() # Default to current time if parsing fails
+        return date.today().isoformat() # Default to current time if parsing fails
 
-def scrape_photos(offer: BeautifulSoup) -> list[HttpUrl]:
-    photos = []
-    photo_url_tag = offer.find("meta", itemprop="contentUrl")
-    if photo_url_tag:
-        photos.append(photo_url_tag["content"])
-    return [HttpUrl(photo) for photo in photos]
+def scrape_photos(offer: BeautifulSoup) -> list[str]:
+    photos = [offer.find("img").get("src","")]
+    return photos
 
 def scrape_link(offer: BeautifulSoup) -> str:
     link_tag = offer.find("a", class_="ellipsis")
+    if link_tag is None:
+        link_tag = offer.find("a")
     return BASE_URL + link_tag["href"] if link_tag else ""
 
 def scrape_id(offer: BeautifulSoup) -> str:
@@ -55,20 +54,21 @@ def parse_verschenken_offer(offer: BeautifulSoup) -> Offer | None:
     offer_date = scrape_time(offer)
     photos = scrape_photos(offer)
     link = scrape_link(offer)
-    _id = scrape_id(offer)
+    id = scrape_id(offer)
     price = scrape_price(offer)
 
     location = Location()
     category = Category()
 
+
     if "Zu verschenken" in price:
         try:
             offer_data = Offer(
-                _id=_id,
+                _id=id,
                 title=title,
                 description=description,
                 address=address,
-                link=HttpUrl(link),
+                link=link,
                 offer_date=offer_date,
                 photos=photos,
                 location=location,

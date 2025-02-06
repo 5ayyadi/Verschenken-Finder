@@ -12,6 +12,8 @@ from handlers import (
     state,
     city,
     results,
+    
+    debug,
 )
 from core.constants import TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
 from core.mongo_client import MongoDBClient
@@ -83,15 +85,22 @@ def main() -> None:
         },
         fallbacks=[MessageHandler(filters.Regex("^Done$"), results)],
     )
+    
 
     application.add_handler(conv_handler)
     application.add_handler(start_handler)
     application.add_handler(results_handler)
     application.add_handler(remove_handler)
     application.add_handler(reset_handler)
+    
+    # ==================== DEBUG HANDLER START ====================
+    debug_handler = CommandHandler("debug", debug)
+    application.add_handler(debug_handler)
+    # ==================== Just use it for debug ==================
 
+       
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
-    main()
+    main()   

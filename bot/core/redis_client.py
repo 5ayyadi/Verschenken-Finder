@@ -94,6 +94,7 @@ class RedisClient:
             db.sadd(user_id, new_preference)
         else:
             raise ValueError(f"Preference {old_preference} does not exist for user {user_id}")
+  
     @classmethod
     def remove_all_user_preferences(cls, user_id: str):
         cls.get_db(USER_PREFERENCES_DB).delete(user_id)
