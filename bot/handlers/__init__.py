@@ -5,3 +5,4 @@ from handlers.sub_category_handler import sub_category
 from handlers.state_handler import state
 from handlers.city_handler import city
 from handlers.results_handler import results
+from handlers.debug_handler import debug

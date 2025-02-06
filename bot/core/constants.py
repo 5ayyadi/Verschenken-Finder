@@ -39,6 +39,9 @@ GENERAL_KEYBOARD = [
     ["Done"]
 ]
 
+# cut off date for the offers (in days)
+CUTOFF_DATE = 90
+
 # Telegram Channel Username
 CHANNEL_ID = "@verschenken_finder"
 

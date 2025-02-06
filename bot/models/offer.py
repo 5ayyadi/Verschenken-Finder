@@ -1,27 +1,28 @@
-from pydantic import BaseModel, HttpUrl
-from datetime import date
+from pydantic import BaseModel, Field
 from typing import List
 
 class Location(BaseModel):
-    city_id: str = None 
-    city_name: str = None 
-    state_id: str = None 
-    state_name: str = None 
+    city_id: str | None = None 
+    city_name: str | None = None 
+    state_id: str | None = None 
+    state_name: str | None = None 
     
 class Category(BaseModel):
-    category_id: str = None 
-    category_name: str = None 
-    subcategory_id: str = None 
-    subcategory_name: str = None 
+    category_id: str | None = None 
+    category_name: str | None = None 
+    subcategory_id: str | None = None 
+    subcategory_name: str | None = None 
     
 class Offer(BaseModel):
-    _id: str  
+    id: str = Field(..., alias='_id')
     title: str
     description: str
     address: str
-    link: HttpUrl
-    offer_date: date
-    photos: List[HttpUrl]
+    link: str | None = None
+    offer_date: str
+    photos: List[str]
     location: Location
     category: Category
     telegram_post_id: str = None
+
+    
