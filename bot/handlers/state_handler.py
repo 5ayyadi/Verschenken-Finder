@@ -4,7 +4,7 @@ from core.constants import CITY, GENERAL_KEYBOARD, CITIES_DICT, STATE, CHOOSING,
 
 async def zipcode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Handles the zipcode choice."""
-    zip_code = int(state)
+    zip_code = update.message.text
     context.user_data["zip_code"] = zip_code
     state = ZIP_DICT.get(zip_code).get("state")
     city = ZIP_DICT.get(zip_code).get("city")

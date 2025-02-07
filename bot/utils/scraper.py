@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
-from core.constants import BASE_URL
+from core.constants import BASE_URL, CUTOFF_DATE
+from datetime import date, timedelta
 from utils.parse_data import parse_verschenken_offer
 from utils.object_creator import create_category_object, create_location_object
 import requests
@@ -80,16 +81,20 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
         
         for offer in offers:
             price = offer.find("p", class_="aditem-main--middle--price-shipping--price")
-            # if there's no "VB" in price, due to being sorted by price, 
-            # that means it's a verschenken offer. VB is the end of verschenken offers
-            if price and "VB" in price.text:
+            # if the offers have VB or Euro sign in price, due to the offers
+            #  being sorted by price, we can stop the search
+            if price and ("VB" in price.text or "€" in price.text):
                 return results
             elif "Zu verschenken" in price.text:
                 offer_item = offer.find_parent("article", class_="aditem")
                 parsed_offer = parse_verschenken_offer(offer_item)
+                # stop it if today - cutoff_date older than offer_date
+                offer_date = date.fromisoformat(parsed_offer.offer_date)
+                if offer_date < date.today() - timedelta(days=CUTOFF_DATE):
+                    return results
                 parsed_offer.location = location
                 parsed_offer.category = category
-                offer_dict = parsed_offer.model_dump()
+                offer_dict = parsed_offer.model_dump(by_alias=True)
                 results.append(offer_dict)
             else:
                 return results

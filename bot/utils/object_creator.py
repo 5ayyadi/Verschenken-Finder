@@ -2,8 +2,8 @@ from models.offer import Category, Location
 from core.constants import CATEGORIES_DICT, CITIES_DICT
 
 def create_category_object(
-    category_name: str = None, 
-    subcategory_name: str = None) -> Category:
+    category_name: str = "", 
+    subcategory_name: str = "") -> Category:
     """Create a dictionary to store the category object."""
     
     if category_name is None:
@@ -28,8 +28,8 @@ def create_category_object(
     )
 
 def create_location_object(
-    city_name: str = None, 
-    state_name: str = None) -> Location:
+    city_name: str = "", 
+    state_name: str = "") -> Location:
     """Create a dictionary to store the location object."""
     
     if state_name is None:

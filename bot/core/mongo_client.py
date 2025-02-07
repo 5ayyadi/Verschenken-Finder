@@ -37,18 +37,17 @@ class MongoDBClient:
         
         
     @classmethod
-    async def create_offers(cls, category_id: str, city_id: str):
+    def create_offers(cls, offers: list[dict]):
         """
-        Find and create offers based on the given category and city id.
+        This function creates the given offers in the database.
         """
-        offers = find_offers(category_id=category_id, city_id=city_id)
         offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
         offer_collection.insert_many(offers)
         
         return offers
 
     @classmethod
-    async def read_offers(cls, city_id: str = None, category_id: str = None):
+    def read_offers(cls, city_id: str = None, category_id: str = None):
         """
         This function returns filtered offers based on query parameters.
         """
@@ -66,13 +65,13 @@ class MongoDBClient:
         return {"result": offers}
 
     @classmethod
-    async def delete_offer(cls, _id: str):
+    def delete_offer(cls, id: str):
         """
         This function deletes the given offer ID.
         """
         offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
         
-        result = offer_collection.delete_one({"_id": ObjectId(_id)})
+        result = offer_collection.delete_one({"_id": ObjectId(id)})
 
         if result.deleted_count == 0:
             raise Exception("Offer not found")
