@@ -75,24 +75,3 @@ def preference_id_to_name(preference_ids: list, pretify: bool = False) -> list[d
             result.append(pref_dict)
 
     return result if result else None
-
-    # result = list()
-    # for id in user_prefrence_ids:
-    #     if id.startswith("c"):
-    #         if CATEGORY_ID_DICT.get(id):
-    #             category_id = id
-    #             pref_dict["category"] = CATEGORY_ID_DICT.get(id)
-    #         else:
-    #             pref_dict["subcategory"] = CATEGORY_ID_DICT.get(
-    #                 f"{category_id}#{id}")
-    #     elif id.startswith("l"):
-    #         if LOCATION_ID_DICT.get(id):
-    #             state_id = id
-    #             pref_dict["state"] = LOCATION_ID_DICT.get(id)
-    #         else:
-    #             pref_dict["city"] = LOCATION_ID_DICT.get(
-    #                 f"{state_id}#{id}")
-    #     if pretify:
-    #         result.append(_pretifer(pref_dict))
-    #     else:
-    #         result.append(pref_dict)
