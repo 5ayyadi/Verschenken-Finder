@@ -67,9 +67,6 @@ class RedisClient:
 
         value = "_".join(state_city) + "#" + "_".join(category_subcategory)
         cls.get_db(USER_PREFERENCES_DB).sadd(user_id, value)
-        # add the user to the chat_ids db
-        cls.set_chat_ids(state_id="_".join(state_city), category_subcategory_id="_".join(
-            category_subcategory), chat_id=user_id,)
         return cls.get_user_preference(user_id)
 
     @classmethod
@@ -121,23 +118,24 @@ class RedisClient:
     # a function to store category and city id as key and
     # related chat_ids list as value
     @classmethod
-    def set_chat_ids(cls, category_subcategory_id: str, state_id: str, chat_id: str):
-        if category_subcategory_id is None:
-            category_subcategory_id = ""
-        if state_id is None:
-            state_id = ""
-        key = f"{state_id}#{category_subcategory_id}"
-        # get the values set from redis
-        existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
-        if existing_value is None:
-            # create a new value
-            existing_value = {chat_id}
-        else:
-            existing_value = set(existing_value)
-            existing_value.add(chat_id)
-        # set the new value
-        cls.get_db(CHAT_IDS_DB).set(
-            name=key, value=json.dumps(list(existing_value)))
+    def set_chat_ids(cls, user_id: str, **kwargs):
+        # this function will add the stateId_cityId#categoryId_subCategoryId keys and chat_id
+        # as values
+        value = user_id
+        # Ensure the order: state_id, city_id, category_id, sub_category_id
+        keys_order = ['state_id', 'city_id', 'category_id', 'sub_category_id']
+        state_city = []
+        category_subcategory = []
+        for key in keys_order:
+            if kwargs[key] is not None:
+                if key in ['state_id', 'city_id']:
+                    state_city.append(kwargs[key])
+                else:
+                    category_subcategory.append(kwargs[key])
+
+        key = "_".join(state_city) + "#" + "_".join(category_subcategory)
+        # user sadd funciton to complete this funciton
+        cls.get_db(CHAT_IDS_DB).sadd(key, value)
 
     @classmethod
     def remove_chat_id(cls, category_subcategory_id: str, state_id: str, chat_id: str):
