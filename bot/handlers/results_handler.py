@@ -28,8 +28,11 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         state_id=state_id,
         city_id=city_id)
 
-    reply_text = "Your search preferences are:\n"
-    # reply_text += "\n".join(r for r in preference_id_to_name(preferences, pretify=True))
+    reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
+    reply_text += "Here are your preferences:\n\n"
+    reply_text += "\n".join(
+        f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
+
     await update.message.reply_text(
         reply_text,
         reply_markup=ReplyKeyboardRemove(),

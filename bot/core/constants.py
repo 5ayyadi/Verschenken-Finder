@@ -31,10 +31,12 @@ with open(os.path.join(os.path.dirname(__file__), "../data/zipcodes.json"), "r",
 
 # States of the conversation
 CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS = range(6)
+REMOVE = 6
+
 
 # General keyboard
 GENERAL_KEYBOARD = [
-    ["Back", "Done"]
+    ["Done"]
 ]
 
 # cut off date for the offers (in days)
@@ -50,7 +52,7 @@ BASE_URL = "https://www.kleinanzeigen.de"
 CATEGORY_URL = f"{BASE_URL}/s-kategorien.html"
 CITY_URL = f"{BASE_URL}/s-katalog-orte.html"
 
-## Redis Database Names
+# Redis Database Names
 # user -> list of category_id#city_id
 USER_PREFERENCES_DB = 0
 # category_id#city_id -> list of chat_ids
