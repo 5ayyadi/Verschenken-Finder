@@ -8,6 +8,8 @@ from core.mongo_client import MongoDBClient
 from core.redis_client import RedisClient
 from core.constants import LOGGER
 from utils.scraper import find_offers
+from utils.offer_sender import send_offers
+from utils.format_prefs import split_preferences
 import os
 
 ADMIN_ID = os.getenv("ADMIN_ID")
@@ -31,16 +33,16 @@ def get_offers():
     return True
         
         
-@app.task
-def send_offers():
+# @app.task
+def send_offers_task():
     """
         This function will be called periodically by the celery
         worker to send the offers to the users.
     """
     LOGGER.info("Sending offers to the users")
     preferences = RedisClient.get_all_preferences()
-    for category_city in preferences:
-        category_id = category_city.split("#")[0]
-        city_id = category_city.split("#")[1]
-        offers = MongoDBClient.get_offers(category_id, city_id)
-        
+    for location_category in preferences:
+        pref = split_preferences(location_category)
+        pref["users"] = preferences[location_category]
+        send_offers(pref)
+                

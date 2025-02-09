@@ -75,3 +75,23 @@ def preference_id_to_name(preference_ids: list, pretify: bool = False) -> list[d
             result.append(pref_dict)
 
     return result if result else None
+
+def split_preferences(pref_id_str: str) -> dict[str, str]:
+    """
+        description: Takes a preference string and returns a dictionary of preferences.
+
+        Args:
+            pref_id_str (str): A preference string.
+            
+        example:
+            pref_id_str = "l1_l2#c1_c2" 
+    """
+    preferences = pref_id_str.split("#")
+    location = preferences[0].split("_")
+    category = preferences[1].split("_")
+    return {
+        "category_id": category[0],
+        "sub_category_id": category[1],
+        "state_id": location[0],
+        "city_id": location[1]
+    }

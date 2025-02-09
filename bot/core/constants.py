@@ -53,7 +53,9 @@ CATEGORY_URL = f"{BASE_URL}/s-kategorien.html"
 CITY_URL = f"{BASE_URL}/s-katalog-orte.html"
 
 # Redis Database Names
-# user -> list of category_id#city_id
+# user -> list of state_city#category_subcategory
 USER_PREFERENCES_DB = 0
-# category_id#city_id -> list of chat_ids
+# state_city#category_subcategory -> list of chat_ids
 CHAT_IDS_DB = 1
+# user -> list of sent offer_ids
+SENT_OFFERS_TRACKER_DB = 2

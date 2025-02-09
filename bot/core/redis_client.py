@@ -4,8 +4,11 @@ from threading import Lock
 import os
 import logging
 
-# TODO: make constants for the db numbers
-from core.constants import USER_PREFERENCES_DB, CHAT_IDS_DB
+from core.constants import (
+    USER_PREFERENCES_DB, 
+    CHAT_IDS_DB,
+    SENT_OFFERS_TRACKER_DB
+)
 
 
 class RedisClient:
@@ -151,3 +154,24 @@ class RedisClient:
             return {}
         values = db.mget(keys)
         return dict(zip(keys, values))
+    
+    # add an offer_id to the list of sent offers for a user
+    @classmethod
+    def add_sent_offer_id(cls, user_id: str, offer_id: str):
+        db = cls.get_db(SENT_OFFERS_TRACKER_DB)
+        db.sadd(user_id, offer_id)
+    
+    # get all sent offer_ids for a user
+    @classmethod
+    def get_sent_offer_ids(cls, user_id: str):
+        return cls.get_db(SENT_OFFERS_TRACKER_DB).smembers(user_id)
+    
+    # remove an offer_id from the list of sent offers for a user
+    @classmethod
+    def remove_sent_offer_id(cls, user_id: str, offer_id: str):
+        db = cls.get_db(SENT_OFFERS_TRACKER_DB)
+        if db.sismember(user_id, offer_id):
+            db.srem(user_id, offer_id)
+        else:
+            raise ValueError(
+                f"Offer {offer_id} does not exist for user {user_id}")
