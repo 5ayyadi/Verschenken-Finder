@@ -3,6 +3,7 @@ from redis.client import Redis
 from threading import Lock
 import os
 import logging
+import json
 
 # TODO: make constants for the db numbers
 from core.constants import USER_PREFERENCES_DB, CHAT_IDS_DB
@@ -66,7 +67,9 @@ class RedisClient:
 
         value = "_".join(state_city) + "#" + "_".join(category_subcategory)
         cls.get_db(USER_PREFERENCES_DB).sadd(user_id, value)
-        # TODO add the prefrences to the chat ids db
+        # add the user to the chat_ids db
+        cls.set_chat_ids(state_id="_".join(state_city), category_subcategory_id="_".join(
+            category_subcategory), chat_id=user_id,)
         return cls.get_user_preference(user_id)
 
     @classmethod
@@ -90,8 +93,10 @@ class RedisClient:
     def remove_user_preference(cls, user_id: str, preference: str):
         db = cls.get_db(USER_PREFERENCES_DB)
         if db.sismember(user_id, preference):
+            state_city, category_subcategory = preference.split("#")
+            cls.remove_chat_id(category_subcategory, state_city, user_id)
             db.srem(user_id, preference)
-            # TODO remove the user id from the chat ids db
+
         else:
             raise ValueError(
                 f"Preference {preference} does not exist for user {user_id}")
@@ -121,17 +126,18 @@ class RedisClient:
             category_subcategory_id = ""
         if state_id is None:
             state_id = ""
-        key = f"{category_subcategory_id}#{state_id}"
+        key = f"{state_id}#{category_subcategory_id}"
         # get the values set from redis
         existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
         if existing_value is None:
             # create a new value
-            existing_value = set(chat_id)
+            existing_value = {chat_id}
         else:
             existing_value = set(existing_value)
             existing_value.add(chat_id)
         # set the new value
-        cls.get_db(CHAT_IDS_DB).set(name=key, value=existing_value)
+        cls.get_db(CHAT_IDS_DB).set(
+            name=key, value=json.dumps(list(existing_value)))
 
     @classmethod
     def remove_chat_id(cls, category_subcategory_id: str, state_id: str, chat_id: str):
@@ -139,10 +145,13 @@ class RedisClient:
             category_subcategory_id = ""
         if state_id is None:
             state_id = ""
-        key = f"{category_subcategory_id}#{state_id}"
+        key = f"{state_id}#{category_subcategory_id}"
         existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
         if existing_value is not None:
             chat_ids = set(existing_value)
+            print(chat_id in chat_ids)
+            print(chat_ids)
+            print(chat_id)
             if chat_id in chat_ids:
                 chat_ids.remove(chat_id)
                 cls.get_db(CHAT_IDS_DB).set(name=key, value=chat_ids)
