@@ -66,6 +66,7 @@ class RedisClient:
 
         value = "_".join(state_city) + "#" + "_".join(category_subcategory)
         cls.get_db(USER_PREFERENCES_DB).sadd(user_id, value)
+        # TODO add the prefrences to the chat ids db
         return cls.get_user_preference(user_id)
 
     @classmethod
@@ -90,6 +91,7 @@ class RedisClient:
         db = cls.get_db(USER_PREFERENCES_DB)
         if db.sismember(user_id, preference):
             db.srem(user_id, preference)
+            # TODO remove the user id from the chat ids db
         else:
             raise ValueError(
                 f"Preference {preference} does not exist for user {user_id}")
@@ -100,6 +102,7 @@ class RedisClient:
         if db.sismember(user_id, old_preference):
             db.srem(user_id, old_preference)
             db.sadd(user_id, new_preference)
+            # TODO remove user id from old prefrence and then add it into the new prefrence
         else:
             raise ValueError(
                 f"Preference {old_preference} does not exist for user {user_id}")
@@ -108,16 +111,17 @@ class RedisClient:
     def remove_all_user_preferences(cls, user_id: str):
         cls.get_db(USER_PREFERENCES_DB).delete(user_id)
         cls.add_user_preference(user_id)
+        # TODO get user prefrences and remove the user id from the chat ids db
 
     # a function to store category and city id as key and
     # related chat_ids list as value
     @classmethod
-    def set_chat_ids(cls, category_id: str, city_id: str, chat_id: str):
-        if category_id is None:
-            category_id = ""
-        if city_id is None:
-            city_id = ""
-        key = f"{category_id}#{city_id}"
+    def set_chat_ids(cls, category_subcategory_id: str, state_id: str, chat_id: str):
+        if category_subcategory_id is None:
+            category_subcategory_id = ""
+        if state_id is None:
+            state_id = ""
+        key = f"{category_subcategory_id}#{state_id}"
         # get the values set from redis
         existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
         if existing_value is None:
@@ -128,6 +132,20 @@ class RedisClient:
             existing_value.add(chat_id)
         # set the new value
         cls.get_db(CHAT_IDS_DB).set(name=key, value=existing_value)
+
+    @classmethod
+    def remove_chat_id(cls, category_subcategory_id: str, state_id: str, chat_id: str):
+        if category_subcategory_id is None:
+            category_subcategory_id = ""
+        if state_id is None:
+            state_id = ""
+        key = f"{category_subcategory_id}#{state_id}"
+        existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
+        if existing_value is not None:
+            chat_ids = set(existing_value)
+            if chat_id in chat_ids:
+                chat_ids.remove(chat_id)
+                cls.get_db(CHAT_IDS_DB).set(name=key, value=chat_ids)
 
     @classmethod
     def get_chat_ids(cls, category_id: str, city_id: str):
