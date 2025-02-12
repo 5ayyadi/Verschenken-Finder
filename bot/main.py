@@ -1,5 +1,5 @@
 import logging
-from telegram import Update
+from telegram import Update, BotCommand
 from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, filters
 from handlers import (
     start,
@@ -13,7 +13,7 @@ from handlers import (
     state,
     city,
     results,
-    
+
     debug,
 )
 from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
@@ -30,10 +30,23 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
 
 
+async def set_bot_commands(application):
+    commands = [
+        BotCommand("start", "Start the bot"),
+        BotCommand("add", "Add an item"),
+        BotCommand("remove", "Remove an item"),
+        BotCommand("show", "Show results"),
+        BotCommand("reset", "Reset data"),
+        BotCommand("debug", "Debug mode")
+    ]
+    await application.bot.set_my_commands(commands)
+
+
 async def start_services(application):
     """Start db and worker services."""
     await MongoDBClient.start_mongo()
     await RedisClient.start_redis()
+    await set_bot_commands(application)
 
 
 async def stop_services(application):
@@ -94,22 +107,20 @@ def main() -> None:
         },
         fallbacks=[MessageHandler(filters.Regex("^Done$"), results)],
     )
-    
 
     application.add_handler(conv_handler)
     application.add_handler(start_handler)
     application.add_handler(results_handler)
     application.add_handler(remove_handler)
     application.add_handler(reset_handler)
-    
+
     # ==================== DEBUG HANDLER START ====================
     debug_handler = CommandHandler("debug", debug)
     application.add_handler(debug_handler)
     # ==================== Just use it for debug ==================
 
-       
     application.run_polling(allowed_updates=Update.ALL_TYPES)
 
 
 if __name__ == "__main__":
-    main()   
+    main()
