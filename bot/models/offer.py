@@ -24,5 +24,11 @@ class Offer(BaseModel):
     location: Location
     category: Category
     telegram_post_id: str = None
+    
+    def __init__(self, **data):
+        if data.get("_id"):
+            data["_id"] = str(data["_id"])
+        super().__init__(**data)
+    
 
     

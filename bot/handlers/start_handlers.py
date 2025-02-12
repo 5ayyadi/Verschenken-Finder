@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ContextTypes
 from core.constants import CHOOSING, REMOVE
 from core.redis_client import RedisClient
-from utils.preference_id_format import preference_id_to_name
+from utils.format_prefs import preference_id_to_name
 from telegram.ext import ConversationHandler
 
 

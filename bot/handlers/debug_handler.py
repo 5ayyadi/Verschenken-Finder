@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from workers.offer_finder import get_offers
+from workers.offers_tasks import send_offers_task
 
 
 async def debug(update: Update, context: CallbackContext) -> None:
@@ -10,4 +10,4 @@ async def debug(update: Update, context: CallbackContext) -> None:
     so we can't test them from the pytest files.
     """
     await update.message.reply_text("Hello! This command is used to debug")
-    get_offers()
+    send_offers_task()

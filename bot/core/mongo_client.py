@@ -2,7 +2,7 @@ from pymongo import MongoClient
 from threading import Lock
 import logging
 import os
-from utils.scraper import find_offers
+from models.offer import Offer
 from bson import ObjectId
 
 class MongoDBClient:
@@ -47,22 +47,16 @@ class MongoDBClient:
         return offers
 
     @classmethod
-    def read_offers(cls, city_id: str = None, category_id: str = None):
+    def get_offers(cls, filter_criteria: dict) -> list[Offer]:
         """
         This function returns filtered offers based on query parameters.
         """
         offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
         
-        filter_criteria = {}
-        if city_id:
-            filter_criteria["city_id"] = city_id
-        if category_id:
-            filter_criteria["category_id"] = category_id
+        query = offer_collection.find(filter_criteria=filter_criteria)
+        offers = [Offer(**offer) for offer in query]
         
-        query = offer_collection.find(filter_criteria)
-        offers = list(query)
-        
-        return {"result": offers}
+        return offers
 
     @classmethod
     def delete_offer(cls, id: str):
