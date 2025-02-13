@@ -1,4 +1,3 @@
-import redis
 from redis.client import Redis
 from threading import Lock
 import os
@@ -15,29 +14,27 @@ from core.constants import (
 class RedisClient:
     _instance = None
     _lock = Lock()
-    _redis_url = None
+    _redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
 
     @classmethod
     def initialize(cls, redis_url: str) -> bool:
         with cls._lock:
             if cls._instance is None:
                 cls._redis_url = redis_url
-                cls._instance = redis.from_url(url=redis_url)
+                cls._instance = Redis.from_url(url=redis_url, decode_responses = True)
         return True
 
     @classmethod
-    def get_client(cls) -> Redis:
+    def get_instance(cls) -> Redis:
         if cls._instance is None:
-            raise ValueError(
-                "RedisClient has not been initialized. Call `initialize` first.")
+            cls._instance = Redis.from_url(url=cls._redis_url, decode_responses=True)
         return cls._instance
 
     @classmethod
-    def get_db(cls, db: int) -> Redis:
-        if cls._instance is None:
-            redis_url = os.getenv("REDIS_URL")
-            cls.initialize(redis_url)
-        return redis.from_url(url=cls._redis_url, db=db)
+    def get_db(cls, db=0):
+        instance = cls.get_instance()
+        instance.select(db)
+        return instance
 
     @classmethod
     async def start_redis(cls):
@@ -47,7 +44,7 @@ class RedisClient:
 
     @classmethod
     async def stop_redis(cls):
-        client = cls.get_client()
+        client = cls.get_instance()
         client.close()
         logging.info("Redis connection is stopped")
 
@@ -77,7 +74,7 @@ class RedisClient:
         result = cls.get_db(USER_PREFERENCES_DB).smembers(user_id)
         preferences = list()
         for item in result:
-            state_city, category_subcategory = item.decode().split("#")
+            state_city, category_subcategory = item.split("#")
             state_city_parts = state_city.split("_")
             category_subcategory_parts = category_subcategory.split("_")
             res_dict = {
@@ -158,27 +155,17 @@ class RedisClient:
                 cls.get_db(CHAT_IDS_DB).set(name=key, value=chat_ids)
 
     @classmethod
-    def get_chat_ids(cls, category_id: str, city_id: str):
-        if category_id is None:
-            category_id = ""
-        if city_id is None:
-            city_id = ""
-        key = f"{category_id}#{city_id}"
-        return set(cls.get_db(CHAT_IDS_DB).get(name=key))
+    def get_chat_ids(cls, location_category_id: str) -> set[str]:
+        return set(cls.get_db(CHAT_IDS_DB).smembers(name=location_category_id))
 
     @classmethod
-    def get_all_preferences(cls):
-        """
-            Returns dictionary of all user preferences
-            Keys: category_id#city_id
-            Values: set of chat_ids
-        """
+    def get_all_preferences(cls) -> set[str]:
         db = cls.get_db(CHAT_IDS_DB)
         keys = db.keys()
         if not keys:
             return {}
         values = db.mget(keys)
-        return dict(zip(keys, values))
+        return keys
     
     # add an offer_id to the list of sent offers for a user
     @classmethod

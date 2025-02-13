@@ -1,4 +1,5 @@
 from pymongo import MongoClient
+from pymongo.errors import BulkWriteError
 from threading import Lock
 import logging
 import os
@@ -42,7 +43,10 @@ class MongoDBClient:
         This function creates the given offers in the database.
         """
         offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
-        offer_collection.insert_many(offers)
+        try:
+            offer_collection.insert_many(offers, ordered=False)
+        except BulkWriteError as e:
+            logging.error(f"Bulk write error: {e.details}")
         
         return offers
 
@@ -53,7 +57,7 @@ class MongoDBClient:
         """
         offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
         
-        query = offer_collection.find(filter_criteria=filter_criteria)
+        query = offer_collection.find(filter_criteria).to_list(length=None)
         offers = [Offer(**offer) for offer in query]
         
         return offers

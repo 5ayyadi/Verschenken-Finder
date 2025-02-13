@@ -26,7 +26,8 @@ def scrape_time(offer: BeautifulSoup) -> str:
         return date.today().isoformat() # Default to current time if parsing fails
 
 def scrape_photos(offer: BeautifulSoup) -> list[str]:
-    photos = [offer.find("img").get("src","")]
+    img_tag = offer.find("img")
+    photos = [img_tag.get("src", "")] if img_tag else []
     return photos
 
 def scrape_link(offer: BeautifulSoup) -> str:

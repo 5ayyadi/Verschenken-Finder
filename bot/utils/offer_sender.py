@@ -6,29 +6,25 @@ from core.constants import TOKEN
 
 bot = Bot(token=TOKEN)
 
-def send_offer_to_user(user_id: str, offer: Offer):
+async def send_offer_to_user(user_id: str, offer: Offer):
     """
         This function will send the offer to the user.
     """
     message = offer.model_dump_json()
-    bot.send_message(chat_id=user_id, text=message)
+    await bot.send_message(chat_id=user_id, text=message)
     
 
-def send_offers(pref_dict: dict):
+async def send_offers(pref_dict: dict):
     """
         This function will be called by the celery worker to send
         the offers to the users.
     """
     
     filter_criteria = {
-        "location": {
-            "city_id": pref_dict["city_id"],
-            "state_id": pref_dict["state_id"]
-        },
-        "category": {
-            "category_id": pref_dict["category_id"],
-            "subcategory_id": pref_dict["sub_category_id"]
-        }
+        "location.city_id": pref_dict["city_id"],
+        "location.state_id": pref_dict["state_id"],
+        "category.category_id": pref_dict["category_id"],
+        "category.subcategory_id": pref_dict["sub_category_id"]
     }
     offers = MongoDBClient.get_offers(filter_criteria)
     
@@ -38,5 +34,5 @@ def send_offers(pref_dict: dict):
 
         for offer in offers:
             if offer.id not in sent_offers:
-                send_offer_to_user(user_id, offer)
+                await send_offer_to_user(user_id, offer)
                 RedisClient.add_sent_offer_id(user_id, offer.id)
