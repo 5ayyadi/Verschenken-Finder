@@ -23,7 +23,7 @@ class Offer(BaseModel):
     photos: List[str]
     location: Location
     category: Category
-    telegram_post_id: str = None
+    telegram_post_id: str | None = None
     
     def __init__(self, **data):
         if data.get("_id"):
