@@ -142,18 +142,15 @@ class RedisClient:
         return set(cls.get_db(CHAT_IDS_DB).get(name=key))
 
     @classmethod
-    def get_all_preferences(cls):
-        """
-            Returns dictionary of all user preferences
-            Keys: category_id#city_id
-            Values: set of chat_ids
-        """
+    def get_all_preferences(cls) -> list[dict[str, set]]:
         db = cls.get_db(CHAT_IDS_DB)
         keys = db.keys()
         if not keys:
             return {}
         values = db.mget(keys)
-        return dict(zip(keys, values))
+        # Decode bytes to strings
+        decoded_values = [value.decode() if value else None for value in values]
+        return dict(zip(keys, decoded_values))
     
     # add an offer_id to the list of sent offers for a user
     @classmethod

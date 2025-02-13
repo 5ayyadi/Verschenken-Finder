@@ -24,7 +24,7 @@ def get_offers():
         into mongodb database.
     """
     LOGGER.info("Getting offers from the websites")
-    preferences = RedisClient.get_user_preference(user_id=ADMIN_ID)
+    preferences = RedisClient.get_user_preference()
     for pref in preferences:
         category_id = pref.get("sub_category_id") if pref.get("sub_category_id") else pref.get("category_id")
         city_id = pref.get("city_id") if pref.get("city_id") else pref.get("state_id")
@@ -41,8 +41,8 @@ def send_offers_task():
     """
     LOGGER.info("Sending offers to the users")
     preferences = RedisClient.get_all_preferences()
-    for location_category in preferences:
-        pref = split_preferences(location_category)
-        pref["users"] = preferences[location_category]
+    for item in preferences:
+        pref = split_preferences(item.keys()[0])
+        pref["users"] = item.values()
         send_offers(pref)
                 
