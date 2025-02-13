@@ -3,6 +3,7 @@ from redis.client import Redis
 from threading import Lock
 import os
 import logging
+import json
 
 from core.constants import (
     USER_PREFERENCES_DB, 
@@ -92,7 +93,10 @@ class RedisClient:
     def remove_user_preference(cls, user_id: str, preference: str):
         db = cls.get_db(USER_PREFERENCES_DB)
         if db.sismember(user_id, preference):
+            state_city, category_subcategory = preference.split("#")
+            cls.remove_chat_id(category_subcategory, state_city, user_id)
             db.srem(user_id, preference)
+
         else:
             raise ValueError(
                 f"Preference {preference} does not exist for user {user_id}")
@@ -103,6 +107,7 @@ class RedisClient:
         if db.sismember(user_id, old_preference):
             db.srem(user_id, old_preference)
             db.sadd(user_id, new_preference)
+            # TODO remove user id from old prefrence and then add it into the new prefrence
         else:
             raise ValueError(
                 f"Preference {old_preference} does not exist for user {user_id}")
@@ -111,26 +116,46 @@ class RedisClient:
     def remove_all_user_preferences(cls, user_id: str):
         cls.get_db(USER_PREFERENCES_DB).delete(user_id)
         cls.add_user_preference(user_id)
+        # TODO get user prefrences and remove the user id from the chat ids db
 
     # a function to store category and city id as key and
     # related chat_ids list as value
     @classmethod
-    def set_chat_ids(cls, category_id: str, city_id: str, chat_id: str):
-        if category_id is None:
-            category_id = ""
-        if city_id is None:
-            city_id = ""
-        key = f"{category_id}#{city_id}"
-        # get the values set from redis
+    def set_chat_ids(cls, user_id: str, **kwargs):
+        # this function will add the stateId_cityId#categoryId_subCategoryId keys and chat_id
+        # as values
+        value = user_id
+        # Ensure the order: state_id, city_id, category_id, sub_category_id
+        keys_order = ['state_id', 'city_id', 'category_id', 'sub_category_id']
+        state_city = []
+        category_subcategory = []
+        for key in keys_order:
+            if kwargs[key] is not None:
+                if key in ['state_id', 'city_id']:
+                    state_city.append(kwargs[key])
+                else:
+                    category_subcategory.append(kwargs[key])
+
+        key = "_".join(state_city) + "#" + "_".join(category_subcategory)
+        # user sadd funciton to complete this funciton
+        cls.get_db(CHAT_IDS_DB).sadd(key, value)
+
+    @classmethod
+    def remove_chat_id(cls, category_subcategory_id: str, state_id: str, chat_id: str):
+        if category_subcategory_id is None:
+            category_subcategory_id = ""
+        if state_id is None:
+            state_id = ""
+        key = f"{state_id}#{category_subcategory_id}"
         existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
-        if existing_value is None:
-            # create a new value
-            existing_value = set(chat_id)
-        else:
-            existing_value = set(existing_value)
-            existing_value.add(chat_id)
-        # set the new value
-        cls.get_db(CHAT_IDS_DB).set(name=key, value=existing_value)
+        if existing_value is not None:
+            chat_ids = set(existing_value)
+            print(chat_id in chat_ids)
+            print(chat_ids)
+            print(chat_id)
+            if chat_id in chat_ids:
+                chat_ids.remove(chat_id)
+                cls.get_db(CHAT_IDS_DB).set(name=key, value=chat_ids)
 
     @classmethod
     def get_chat_ids(cls, category_id: str, city_id: str):
