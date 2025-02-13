@@ -28,6 +28,14 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         state_id=state_id,
         city_id=city_id)
 
+    RedisClient.set_chat_ids(
+        user_id=update.effective_user.id,
+        category_id=category_id,
+        sub_category_id=sub_category_id,
+        state_id=state_id,
+        city_id=city_id
+    )
+
     reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
     reply_text += "Here are your preferences:\n\n"
     reply_text += "\n".join(
