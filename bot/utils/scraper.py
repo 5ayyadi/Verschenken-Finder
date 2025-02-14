@@ -4,6 +4,7 @@ from datetime import date, timedelta
 from utils.parse_data import parse_verschenken_offer
 from utils.object_creator import create_category_object, create_location_object
 import requests
+from core.mongo_client import MongoDBClient
 
 
 def scrap_category_location(soup: BeautifulSoup) -> dict[str, str]:
@@ -79,6 +80,16 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
             city_name=category_location_dict.get("city"),
         )
         
+        filter_criteria = {
+            "location.city_id": location.city_id,
+            "location.state_id": location.state_id,
+            "category.category_id": category.category_id,
+            "category.subcategory_id": category.subcategory_id,
+        }
+        
+        offers_in_db = MongoDBClient.get_offers(filter_criteria)
+        existing_offer_ids = {item.id for item in offers_in_db}
+
         for offer in offers:
             price = offer.find("p", class_="aditem-main--middle--price-shipping--price")
             # if the offers have VB or Euro sign in price, due to the offers
@@ -88,6 +99,8 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
             elif "Zu verschenken" in price.text:
                 offer_item = offer.find_parent("article", class_="aditem")
                 parsed_offer = parse_verschenken_offer(offer_item)
+                if parsed_offer.id in existing_offer_ids:
+                    return results
                 # stop it if today - cutoff_date older than offer_date
                 offer_date = date.fromisoformat(parsed_offer.offer_date)
                 if offer_date < date.today() - timedelta(days=CUTOFF_DATE):
