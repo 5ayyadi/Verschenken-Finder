@@ -77,7 +77,7 @@ def main() -> None:
         fallbacks=[],
     )
     reset_handler = CommandHandler("reset", reset)
-    conv_handler = ConversationHandler(
+    pref_handler = ConversationHandler(
         allow_reentry=True,
         entry_points=[CommandHandler("add", add)],
         states={
@@ -111,7 +111,7 @@ def main() -> None:
                    ],
     )
 
-    application.add_handler(conv_handler)
+    application.add_handler(pref_handler)
     application.add_handler(start_handler)
     application.add_handler(results_handler)
     application.add_handler(remove_handler)
