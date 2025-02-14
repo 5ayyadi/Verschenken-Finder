@@ -17,6 +17,8 @@ ADMIN_ID = os.getenv("ADMIN_ID")
 app = CeleryClient.app
 
 # @app.task(name='get_offers_task')
+
+
 def get_offers():
     """
         This function will be called periodically by the celery
@@ -27,13 +29,16 @@ def get_offers():
     preferences = RedisClient.get_all_preferences()
     for pref_str in preferences:
         pref = split_preferences(pref_str)
-        category_id = pref.get("sub_category_id") if pref.get("sub_category_id") else pref.get("category_id")
-        city_id = pref.get("city_id") if pref.get("city_id") else pref.get("state_id")
+        category_id = pref.get("sub_category_id") if pref.get(
+            "sub_category_id") else pref.get("category_id")
+        city_id = pref.get("city_id") if pref.get(
+            "city_id") else pref.get("state_id")
         offers = find_offers(category_id, city_id)
-        MongoDBClient.create_offers(offers)
+        if offers:
+            MongoDBClient.create_offers(offers)
     return True
-        
-        
+
+
 # @app.task
 async def send_offers_task():
     """
@@ -46,4 +51,3 @@ async def send_offers_task():
         pref = split_preferences(item)
         pref["users"] = RedisClient.get_chat_ids(item)
         await send_offers(pref)
-                
