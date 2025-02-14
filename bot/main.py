@@ -13,12 +13,14 @@ from handlers import (
     state,
     city,
     results,
+    cancel,
 
     debug,
 )
 from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
 from core.mongo_client import MongoDBClient
 from core.redis_client import RedisClient
+
 
 # Enable logging
 logging.basicConfig(
@@ -37,7 +39,6 @@ async def set_bot_commands(application):
         BotCommand("remove", "Remove an item"),
         BotCommand("show", "Show results"),
         BotCommand("reset", "Reset data"),
-        BotCommand("debug", "Debug mode")
     ]
     await application.bot.set_my_commands(commands)
 
@@ -77,27 +78,28 @@ def main() -> None:
     )
     reset_handler = CommandHandler("reset", reset)
     conv_handler = ConversationHandler(
+        allow_reentry=True,
         entry_points=[CommandHandler("add", add)],
         states={
-            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing,),],
+            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing),],
             CATEGORY: [
-                # MessageHandler(filters.Regex("^Back$"), choosing),
+                MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, category),
             ],
             SUB_CATEGORY: [
-                # MessageHandler(filters.Regex("^Back$"), category),
+                MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, sub_category),
             ],
             STATE: [
-                # MessageHandler(filters.Regex("^Back$"), choosing),
+                MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
 
             ],
             CITY: [
-                # MessageHandler(filters.Regex("^Back$"), state),
+                MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
             ],
@@ -105,7 +107,8 @@ def main() -> None:
                 MessageHandler(filters.TEXT & ~filters.COMMAND, results),
             ],
         },
-        fallbacks=[MessageHandler(filters.Regex("^Done$"), results)],
+        fallbacks=[MessageHandler(filters.Regex("^Cancel$"), cancel), MessageHandler(filters.Regex("^Done$"), results),
+                   ],
     )
 
     application.add_handler(conv_handler)
