@@ -100,7 +100,7 @@ def find_offers(category_id: str = None ,city_id: str = None) -> list[dict]:
                 offer_item = offer.find_parent("article", class_="aditem")
                 parsed_offer = parse_verschenken_offer(offer_item)
                 if parsed_offer.id in existing_offer_ids:
-                    return results
+                    continue
                 # stop it if today - cutoff_date older than offer_date
                 offer_date = date.fromisoformat(parsed_offer.offer_date)
                 if offer_date < date.today() - timedelta(days=CUTOFF_DATE):
