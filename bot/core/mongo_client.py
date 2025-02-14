@@ -6,11 +6,11 @@ import os
 from models.offer import Offer
 from bson import ObjectId
 
+
 class MongoDBClient:
     _instance = None
     _lock = Lock()
 
-    
     @classmethod
     def initialize(cls, mongo_URI: str) -> bool:
         with cls._lock:
@@ -21,7 +21,8 @@ class MongoDBClient:
     @classmethod
     def get_client(cls) -> MongoClient:
         if cls._instance is None:
-            raise ValueError("MongoDBClient has not been initialized. Call `initialize` first.")
+            raise ValueError(
+                "MongoDBClient has not been initialized. Call `initialize` first.")
         return cls._instance
 
     @classmethod
@@ -35,19 +36,19 @@ class MongoDBClient:
         client = cls.get_client()
         client.close()
         logging.info("MongoDB server is stopped")
-        
-        
+
     @classmethod
-    def create_offers(cls, offers: list[dict]):
+    def create_offers(cls, offers: list[dict] | None = None):
         """
         This function creates the given offers in the database.
         """
-        offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
+        offer_collection = cls.get_client().get_database(
+            "KleineAnzeigen").get_collection("Offer")
         try:
             offer_collection.insert_many(offers, ordered=False)
         except BulkWriteError as e:
             logging.error(f"Bulk write error: {e.details}")
-        
+
         return offers
 
     @classmethod
@@ -55,11 +56,12 @@ class MongoDBClient:
         """
         This function returns filtered offers based on query parameters.
         """
-        offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
-        
+        offer_collection = cls.get_client().get_database(
+            "KleineAnzeigen").get_collection("Offer")
+
         query = offer_collection.find(filter_criteria).to_list(length=None)
         offers = [Offer(**offer) for offer in query]
-        
+
         return offers
 
     @classmethod
@@ -67,8 +69,9 @@ class MongoDBClient:
         """
         This function deletes the given offer ID.
         """
-        offer_collection = cls.get_client().get_database("KleineAnzeigen").get_collection("Offer")
-        
+        offer_collection = cls.get_client().get_database(
+            "KleineAnzeigen").get_collection("Offer")
+
         result = offer_collection.delete_one({"_id": ObjectId(id)})
 
         if result.deleted_count == 0:
