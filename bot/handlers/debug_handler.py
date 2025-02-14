@@ -11,9 +11,9 @@ async def debug(update: Update, context: CallbackContext) -> None:
     so we can't test them from the pytest files.
     """
     await update.message.reply_text("Hello! This command is used to debug")
-    # # first seed the initial data
-    # seed_data()
-    # # then scrape offers based on seed data
-    # get_offers()
+    # first seed the initial data
+    seed_data()
+    # then scrape offers based on seed data
+    get_offers()
     # in the end send offers to the users
-    await send_offers_task()
+    # await send_offers_task()
