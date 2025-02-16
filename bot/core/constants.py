@@ -59,3 +59,9 @@ USER_PREFERENCES_DB = 0
 CHAT_IDS_DB = 1
 # user -> list of sent offer_ids
 SENT_OFFERS_TRACKER_DB = 2
+
+# Celery Task Names and Intervals
+GET_OFFERS_TASK = "get_offers"
+SEND_OFFERS_TASK = "send_offers"
+GET_OFFERS_INTERVAL = 60 * 60 * 24  # 24 hours
+SEND_OFFERS_INTERVAL = 60 * 60  # 1 hour

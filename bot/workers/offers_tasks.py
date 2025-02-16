@@ -6,19 +6,18 @@
 from core.celery_client import CeleryClient
 from core.mongo_client import MongoDBClient
 from core.redis_client import RedisClient
-from core.constants import LOGGER
+from core.constants import (
+    LOGGER,
+    GET_OFFERS_TASK,
+    SEND_OFFERS_TASK,
+)
 from utils.scraper import find_offers
 from utils.offer_sender import send_offers
 from utils.format_prefs import split_preferences
-import os
-
-ADMIN_ID = os.getenv("ADMIN_ID")
 
 app = CeleryClient.app
 
-# @app.task(name='get_offers_task')
-
-
+@app.task(name=GET_OFFERS_TASK)
 def get_offers():
     """
         This function will be called periodically by the celery
@@ -38,8 +37,7 @@ def get_offers():
             MongoDBClient.create_offers(offers)
     return True
 
-
-# @app.task
+@app.task(name=SEND_OFFERS_TASK)
 async def send_offers_task():
     """
         This function will be called periodically by the celery
