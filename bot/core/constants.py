@@ -36,7 +36,7 @@ REMOVE = 6
 
 # General keyboard
 GENERAL_KEYBOARD = [
-    ["Done"]
+    ["Cancel"]
 ]
 
 # cut off date for the offers (in days)
