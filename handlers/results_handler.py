@@ -6,15 +6,6 @@ from utils.format_prefs import preference_id_to_name
 
 async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Display the gathered info and end the conversation."""
-    # user_id -> set of category_id#city_id
-    # context.user_data = {
-    #    "category": category name
-    #    "city": city name
-    #    "state": state name
-    #    "subcategory": subcategory name
-    #   "subcategory_id": subcategory_id
-    #  "category_id": category_id
-    # }
     zip_code = context.user_data.get("zip_code", "")
     category_id = context.user_data.get("category_id", "")
     sub_category_id = context.user_data.get("sub_category_id", "")
