@@ -3,8 +3,13 @@ from core.redis_client import RedisClient
 from models.offer import Offer
 from telegram import Bot
 from core.constants import TOKEN
+import logging
 
 bot = Bot(token=TOKEN)
+
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)  
 
 
 # JSON attributes:
@@ -24,7 +29,7 @@ async def send_offer_to_user(user_id: str, offer: Offer):
         This function sends a formatted offer message to the user.
     """
     offer_data = offer.model_dump()
-
+    
     message = (
         f"<b>{offer_data['title']}</b>\n\n"
         f"📝 <b>Beschreibung:</b>\n{offer_data['description']}\n\n"
@@ -53,11 +58,13 @@ async def send_offers(pref_dict: dict):
         "category.subcategory_id": pref_dict["sub_category_id"]
     }
     offers = list(reversed(MongoDBClient.get_offers(filter_criteria)))
-
+    logging.info(f"{len(offers)} offers found for {pref_dict}")
+    
     for user_id in pref_dict.get("users"):
         sent_offers = RedisClient.get_sent_offer_ids(user_id)
-
+        logging.info(f"User {user_id} sent offers : {sent_offers}")
         for offer in offers:
             if offer.id not in sent_offers:
+                logging(f"Sending offer with id of {offer.id} to user {user_id}")
                 await send_offer_to_user(user_id, offer)
                 RedisClient.add_sent_offer_id(user_id, offer.id)

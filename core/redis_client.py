@@ -2,7 +2,6 @@ from redis.client import Redis
 from threading import Lock
 import os
 import logging
-import json
 
 from core.constants import (
     USER_PREFERENCES_DB, 
@@ -10,6 +9,9 @@ from core.constants import (
     SENT_OFFERS_TRACKER_DB
 )
 
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)  
 
 class RedisClient:
     _instance = None

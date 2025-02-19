@@ -6,7 +6,9 @@ import os
 from models.offer import Offer
 from bson import ObjectId
 
-
+logging.basicConfig(
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
+)    
 class MongoDBClient:
     _instance = None
     _lock = Lock()
@@ -38,18 +40,19 @@ class MongoDBClient:
         logging.info("MongoDB server is stopped")
 
     @classmethod
-    def create_offers(cls, offers: list[dict] | None = None):
+    def create_offers(cls, offers: list[dict] | None = None) -> list[str]:
         """
         This function creates the given offers in the database.
         """
         offer_collection = cls.get_client().get_database(
             "KleineAnzeigen").get_collection("Offer")
         try:
-            offer_collection.insert_many(offers, ordered=False)
+            res = offer_collection.insert_many(offers, ordered=False)
+            logging.info(f"{len(res.inserted_ids)} offers inserted successfully")
+            return [str(inserted_id) for inserted_id in res.inserted_ids]
         except BulkWriteError as e:
             logging.error(f"Bulk write error: {e.details}")
-
-        return offers
+            return list()
 
     @classmethod
     def get_offers(cls, filter_criteria: dict) -> list[Offer]:

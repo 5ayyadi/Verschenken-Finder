@@ -1,13 +1,5 @@
 import os
 import json
-import logging
-
-# Enable logging
-logging.basicConfig(
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
-)
-logging.getLogger("httpx").setLevel(logging.WARNING)
-LOGGER = logging.getLogger(__name__)
 
 # Load the bot token from environment variable
 TOKEN = os.getenv("BOT_TOKEN")
@@ -59,3 +51,9 @@ USER_PREFERENCES_DB = 0
 CHAT_IDS_DB = 1
 # user -> list of sent offer_ids
 SENT_OFFERS_TRACKER_DB = 2
+
+# Celery Task Names and Intervals
+GET_OFFERS_TASK = "get_offers"
+SEND_OFFERS_TASK = "send_offers"
+GET_OFFERS_INTERVAL = 60   # 5 minutes
+SEND_OFFERS_INTERVAL = 65 # 1 hour

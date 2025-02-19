@@ -56,3 +56,6 @@ venv/
 
 # macOS specific files
 .DS_Store
+
+# celery beat schedule file
+celerybeat-schedule

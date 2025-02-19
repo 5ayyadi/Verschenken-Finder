@@ -14,6 +14,6 @@ async def debug(update: Update, context: CallbackContext) -> None:
     # first seed the initial data
     seed_data()
     # then scrape offers based on seed data
-    get_offers()
+    # get_offers()
     # in the end send offers to the users
     # await send_offers_task()
