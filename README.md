@@ -42,4 +42,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 ## Contact
 
 For any inquiries, please contact [Lee](mailto:leesayyadi@gmail.com).
-Ali
