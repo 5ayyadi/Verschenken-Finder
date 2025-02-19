@@ -1,6 +1,11 @@
 import os
 from celery import Celery, schedules
-from core.constants import GET_OFFERS_INTERVAL, SEND_OFFERS_INTERVAL
+from core.constants import (
+    GET_OFFERS_INTERVAL,
+    SEND_OFFERS_INTERVAL,
+    GET_OFFERS_TASK,
+    SEND_OFFERS_TASK,
+)
 
 class CeleryClient:
     broker_url = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/3')
@@ -15,7 +20,6 @@ class CeleryClient:
 
     app = Celery('verschenken_finder', broker=broker_url)
 
-    # Optional configuration settings
     app.conf.update(
         result_backend=result_backend,
         task_serializer=task_serializer,
@@ -25,13 +29,19 @@ class CeleryClient:
         enable_utc=enable_utc,
         beat_schedule={
             f'get-offers-every-{GET_OFFERS_INTERVAL}-seconds': {
-                'task': 'workers.offers_tasks.get_offers',
+                'task': f'workers.offers_tasks.{GET_OFFERS_TASK}',
                 'schedule': schedules.schedule(run_every=GET_OFFERS_INTERVAL),
             },
             f'send-offers-every-{SEND_OFFERS_INTERVAL}-seconds': {
-                'task': 'workers.offers_tasks.send_offers_task',
+                'task': f'workers.offers_tasks.{SEND_OFFERS_TASK}',
                 'schedule': schedules.schedule(run_every=SEND_OFFERS_INTERVAL),
             },
         },
         include=['workers.offers_tasks']
     )
+    
+    @classmethod
+    def get_app(cls):
+        return cls.app
+
+app = CeleryClient.get_app()
