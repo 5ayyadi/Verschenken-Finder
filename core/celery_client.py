@@ -1,5 +1,6 @@
 import os
 from celery import Celery, schedules
+from core.mongo_client import MongoDBClient
 from core.constants import (
     GET_OFFERS_INTERVAL,
     SEND_OFFERS_INTERVAL,
@@ -29,11 +30,11 @@ class CeleryClient:
         enable_utc=enable_utc,
         beat_schedule={
             f'get-offers-every-{GET_OFFERS_INTERVAL}-seconds': {
-                'task': f'workers.offers_tasks.{GET_OFFERS_TASK}',
+                'task': GET_OFFERS_TASK,
                 'schedule': schedules.schedule(run_every=GET_OFFERS_INTERVAL),
             },
             f'send-offers-every-{SEND_OFFERS_INTERVAL}-seconds': {
-                'task': f'workers.offers_tasks.{SEND_OFFERS_TASK}',
+                'task': SEND_OFFERS_TASK,
                 'schedule': schedules.schedule(run_every=SEND_OFFERS_INTERVAL),
             },
         },
@@ -45,3 +46,10 @@ class CeleryClient:
         return cls.app
 
 app = CeleryClient.get_app()
+
+# Initialize MongoDB for Celery workers
+@app.on_after_configure.connect
+def setup_mongodb(sender, **kwargs):
+    # Initialize MongoDB client
+    mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo:27017")
+    MongoDBClient.initialize(mongo_uri)
