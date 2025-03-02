@@ -65,6 +65,6 @@ async def offer_sender(pref_dict: dict):
         logging.info(f"User {user_id} sent offers : {sent_offers}")
         for offer in offers:
             if offer.id not in sent_offers:
-                logging(f"Sending offer with id of {offer.id} to user {user_id}")
+                logging.info(f"Sending offer with id of {offer.id} to user {user_id}")
                 await send_offer_to_user(user_id, offer)
                 RedisClient.add_sent_offer_id(user_id, offer.id)
