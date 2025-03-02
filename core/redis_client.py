@@ -34,7 +34,9 @@ class RedisClient:
 
     @classmethod
     def get_db(cls, db=0):
-        return Redis.from_url(url=cls._redis_url, decode_responses=True, db=db)
+        instance = cls.get_instance()
+        instance.select(db)
+        return instance
 
     @classmethod
     async def start_redis(cls):
