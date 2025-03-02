@@ -87,8 +87,20 @@ def split_preferences(pref_id_str: str) -> dict[str, str]:
             pref_id_str = "l1_l2#c1_c2" 
     """
     preferences = pref_id_str.split("#")
+    
+    # Handle case where there might not be enough parts
+    while len(preferences) < 2:
+        preferences.append("")
+        
     location = preferences[0].split("_")
     category = preferences[1].split("_")
+    
+    # Make sure both location and category lists have at least 2 elements
+    while len(location) < 2:
+        location.append("")
+    while len(category) < 2:
+        category.append("")
+    
     return {
         "category_id": category[0],
         "sub_category_id": category[1],
