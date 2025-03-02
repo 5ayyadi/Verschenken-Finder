@@ -1,6 +1,6 @@
 from telegram import Update
 from telegram.ext import CallbackContext
-from workers.offers_tasks import send_offers_task, get_offers
+from workers.offers_tasks import send_offers, get_offers
 from utils.seed_maker import seed_data
 
 
