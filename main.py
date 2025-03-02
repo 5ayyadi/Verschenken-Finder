@@ -14,7 +14,7 @@ from handlers import (
     city,
     results,
     cancel,
-
+    error_handler,
     debug,
 )
 from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
@@ -117,6 +117,7 @@ def main() -> None:
     application.add_handler(remove_handler)
     application.add_handler(reset_handler)
 
+    application.add_error_handler(error_handler)
     # ==================== DEBUG HANDLER START ====================
     debug_handler = CommandHandler("debug", debug)
     application.add_handler(debug_handler)
