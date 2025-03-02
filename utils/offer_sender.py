@@ -45,7 +45,7 @@ async def send_offer_to_user(user_id: str, offer: Offer):
     await bot.send_message(chat_id=user_id, text=message, parse_mode="HTML")
 
 
-async def send_offers(pref_dict: dict):
+async def offer_sender(pref_dict: dict):
     """
         This function will be called by the celery worker to send
         the offers to the users.

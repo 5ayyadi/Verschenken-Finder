@@ -11,7 +11,7 @@ from core.constants import (
     SEND_OFFERS_TASK,
 )
 from utils.scraper import find_offers
-from utils.offer_sender import send_offers
+from utils.offer_sender import offer_sender
 from utils.format_prefs import split_preferences
 import logging
 import asyncio
@@ -48,7 +48,7 @@ def get_offers():
     
 
 @app.task(name=SEND_OFFERS_TASK)
-def send_offers_task():
+def send_offers():
     """
         This function will be called periodically by the Celery
         worker to send offers to the users.
@@ -61,4 +61,4 @@ def send_offers_task():
         pref = split_preferences(item)
         pref["users"] = RedisClient.get_chat_ids(item)
         logging.info(f"Sending offers to {len(pref['users'])} users for {item}")
-        asyncio.run(send_offers(pref))
+        asyncio.run(offer_sender(pref))
