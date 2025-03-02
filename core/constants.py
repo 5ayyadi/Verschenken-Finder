@@ -52,6 +52,8 @@ CHAT_IDS_DB = 1
 # user -> list of sent offer_ids
 SENT_OFFERS_TRACKER_DB = 2
 
+CELERY_BROKER_DB = 3
+
 # Celery Task Names and Intervals
 GET_OFFERS_TASK = "workers.offers_tasks.get_offers"
 SEND_OFFERS_TASK = "workers.offers_tasks.send_offers"
