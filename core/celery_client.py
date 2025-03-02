@@ -8,9 +8,9 @@ from core.constants import (
 )
 
 class CeleryClient:
-    broker_url = os.getenv('CELERY_BROKER_URL', 'redis://localhost:6379/3')
+    broker_url = os.getenv('CELERY_BROKER_URL', 'redis://redis:6379/3')
     result_backend = os.getenv(
-        'CELERY_RESULT_BACKEND', 'redis://localhost:6379/3')
+        'CELERY_RESULT_BACKEND', 'redis://redis:6379/3')
     task_serializer = os.getenv('CELERY_TASK_SERIALIZER', 'json')
     accept_content = os.getenv('CELERY_ACCEPT_CONTENT', 'json').split(',')
     result_serializer = os.getenv('CELERY_RESULT_SERIALIZER', 'json')

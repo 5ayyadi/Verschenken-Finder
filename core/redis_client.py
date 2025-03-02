@@ -16,7 +16,7 @@ logging.basicConfig(
 class RedisClient:
     _instance = None
     _lock = Lock()
-    _redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+    _redis_url = os.getenv('REDIS_URL', 'redis://redis:6379')
 
     @classmethod
     def initialize(cls, redis_url: str) -> bool:
