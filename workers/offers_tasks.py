@@ -22,6 +22,7 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO
 )
 
+
 @app.task(name=GET_OFFERS_TASK)
 def get_offers():
     """
@@ -43,9 +44,9 @@ def get_offers():
         logging.info(f"{len(offers)} offers found for {pref_str}")
         if offers:
             results.append(MongoDBClient.create_offers(offers))
-    logging.info(f"Overall {len(results)} offers found and saved to the database")
-    
-    
+    logging.info(
+        f"Overall {len(results)} offers found and saved to the database")
+
 
 @app.task(name=SEND_OFFERS_TASK)
 def send_offers():
@@ -56,9 +57,31 @@ def send_offers():
     logging.info("Sending offers to the users")
     preferences = RedisClient.get_all_preferences()
     logging.info(f"Preferences: {preferences}")
-    
+
     for item in preferences:
         pref = split_preferences(item)
         pref["users"] = RedisClient.get_chat_ids(item)
-        logging.info(f"Sending offers to {len(pref['users'])} users for {item}")
-        asyncio.run(offer_sender(pref))
+        logging.info(
+            f"Sending offers to {len(pref['users'])} users for {item}")
+
+        # Try to get existing event loop, create new one if needed
+        try:
+            loop = asyncio.get_event_loop()
+            if loop.is_closed():
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+
+        try:
+            loop.run_until_complete(offer_sender(pref))
+        except Exception as e:
+            logging.error(f"Error sending offers: {e}")
+            # Clean up and create fresh loop for next iteration
+            try:
+                loop.close()
+            except:
+                pass
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
