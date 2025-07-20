@@ -35,10 +35,14 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 city_id=city_id
             )
 
+            # Filter out empty or invalid preferences
+            valid_preferences = [r for r in preference_id_to_name(
+                preferences, pretify=True) if r.strip()]
+
             reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
             reply_text += "Here are your preferences:\n\n"
             reply_text += "\n".join(
-                f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
+                f"📌 {r}" for r in valid_preferences)
 
             await query.edit_message_text(reply_text)
 
@@ -73,10 +77,14 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             city_id=city_id
         )
 
+        # Filter out empty or invalid preferences
+        valid_preferences = [r for r in preference_id_to_name(
+            preferences, pretify=True) if r.strip()]
+
         reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
         reply_text += "Here are your preferences:\n\n"
         reply_text += "\n".join(
-            f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
+            f"📌 {r}" for r in valid_preferences)
 
         await update.message.reply_text(reply_text)
 
