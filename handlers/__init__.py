@@ -1,4 +1,4 @@
-from handlers.start_handlers import start, add, remove, reset, confirm_remove, confirm_reset
+from handlers.start_handlers import start, add, manage_prefs, reset, confirm_remove, confirm_reset, remove_single_preference, remove_all_preferences, manage_prefs_callback
 from handlers.choosing_handler import choosing
 from handlers.category_handler import category
 from handlers.sub_category_handler import sub_category

@@ -4,6 +4,7 @@ from models.offer import Offer
 from telegram import Bot
 from core.constants import TOKEN
 import logging
+from datetime import datetime
 
 bot = Bot(token=TOKEN)
 
@@ -30,19 +31,47 @@ async def send_offer_to_user(user_id: str, offer: Offer):
     """
     offer_data = offer.model_dump()
     
-    message = (
-        f"<b>{offer_data['title']}</b>\n\n"
-        f"📝 <b>Beschreibung:</b>\n{offer_data['description']}\n\n"
-        f"📍 <b>Ort:</b> {offer_data['address']} ({offer_data['location']['state_name']})\n"
-        f"🗂️ <b>Kategorie:</b> {offer_data['category']['subcategory_name']} ({offer_data['category']['category_name']})\n"
-        f"📅 <b>Datum:</b> {offer_data['offer_date']}\n\n"
-        f"🔗 <a href='{offer_data['link']}'>Mehr Details</a>\n"
+    # Format the date as "YYYY, Mon DD"
+    try:
+        date_obj = datetime.strptime(offer_data['offer_date'], "%Y-%m-%d")
+        formatted_date = date_obj.strftime("%Y, %b %d")
+    except Exception:
+        formatted_date = offer_data['offer_date']
+
+    # Create caption with clean minimal formatting
+    caption = (
+        f"*{offer_data['title']}*\n\n"
+        f"📝 {offer_data['description']}\n\n"
+        f"📍 {offer_data['address']}\n"
+        f"📅 {formatted_date}\n\n"
+        f"[🔗 Mehr Details]({offer_data['link']})"
     )
 
-    if 'photos' in offer_data and offer_data['photos']:
-        message += f"🖼️ <a href='{offer_data['photos'][0]}'>Bild ansehen</a>\n"
 
-    await bot.send_message(chat_id=user_id, text=message, parse_mode="HTML")
+    # Send as photo with caption if photo exists, otherwise send as text
+    if 'photos' in offer_data and offer_data['photos'] and offer_data['photos'][0]:
+        photo_url = offer_data['photos'][0]
+        try:
+            await bot.send_photo(
+                chat_id=user_id,
+                photo=photo_url,
+                caption=caption,
+                parse_mode="Markdown"
+            )
+        except Exception as e:
+            logging.error(f"Failed to send photo for offer {offer_data.get('_id')}: {e}")
+            # Fallback to text message if photo sending fails
+            await bot.send_message(
+                chat_id=user_id,
+                text=caption,
+                parse_mode="Markdown"
+            )
+    else:
+        await bot.send_message(
+            chat_id=user_id,
+            text=caption,
+            parse_mode="Markdown"
+        )
 
 
 async def offer_sender(pref_dict: dict):

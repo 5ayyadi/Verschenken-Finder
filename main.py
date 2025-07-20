@@ -4,10 +4,13 @@ from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler
 from handlers import (
     start,
     add,
-    remove,
+    manage_prefs,
     confirm_remove,
     confirm_reset,
     reset,
+    remove_single_preference,
+    remove_all_preferences,
+    manage_prefs_callback,
     choosing,
     category,
     sub_category,
@@ -43,7 +46,7 @@ async def set_bot_commands(application):
     commands = [
         BotCommand("start", "Start the bot"),
         BotCommand("add", "Add an item"),
-        BotCommand("remove", "Remove an item"),
+        BotCommand("manage_prefs", "Manage preferences"),
         BotCommand("show", "Show results"),
         BotCommand("preferences", "View and manage preferences"),
         BotCommand("reset", "Reset data"),
@@ -76,17 +79,25 @@ def main() -> None:
     start_handler = CommandHandler("start", start)
     results_handler = CommandHandler("show", results)
     preferences_handler = CommandHandler("preferences", view_preferences)
-    # remove_handler = CommandHandler("remove", remove)
-    remove_handler = ConversationHandler(
-        entry_points=[CommandHandler("remove", remove)],
+    # manage_prefs_handler = CommandHandler("manage_prefs", manage_prefs)
+    manage_prefs_handler = ConversationHandler(
+        entry_points=[CommandHandler("manage_prefs", manage_prefs)],
         states={
+            CHOOSING: [
+                CallbackQueryHandler(remove_single_preference, pattern="^remove_preference$"),
+                CallbackQueryHandler(remove_all_preferences, pattern="^remove_all_preferences$"),
+                CallbackQueryHandler(confirm_remove, pattern="^confirm_remove_all$"),
+                CallbackQueryHandler(manage_prefs_callback, pattern="^back_to_manage$"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
+            ],
             REMOVE: [
-                CallbackQueryHandler(confirm_remove, pattern="^remove_"),
+                CallbackQueryHandler(confirm_remove, pattern="^remove_single_\\d+$"),
+                CallbackQueryHandler(manage_prefs_callback, pattern="^back_to_manage$"),
                 CallbackQueryHandler(cancel, pattern="^cancel_remove$"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, confirm_remove)
             ]
         },
-        fallbacks=[],
+        fallbacks=[CallbackQueryHandler(cancel, pattern="^cancel$")],
     )
     reset_handler = ConversationHandler(
         entry_points=[CommandHandler("reset", reset)],
@@ -137,7 +148,7 @@ def main() -> None:
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
             ],
             CITY: [
-                CallbackQueryHandler(city, pattern="^(city_|cancel)"),
+                CallbackQueryHandler(city, pattern="^(city_|cancel|confirm_zipcode)"),
                 CallbackQueryHandler(results, pattern="^done$"),
                 CallbackQueryHandler(back_to_state, pattern="^back_to_state$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
@@ -160,7 +171,7 @@ def main() -> None:
     application.add_handler(start_handler)
     application.add_handler(results_handler)
     application.add_handler(preferences_handler)
-    application.add_handler(remove_handler)
+    application.add_handler(manage_prefs_handler)
     application.add_handler(reset_handler)
 
     application.add_error_handler(error_handler)
