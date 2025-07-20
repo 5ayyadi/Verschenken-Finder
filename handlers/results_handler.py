@@ -11,7 +11,7 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     sub_category_id = context.user_data.get("sub_category_id", "")
     state_id = context.user_data.get("state_id", "")
     city_id = context.user_data.get("city_id", "")
-    
+
     preferences = RedisClient.add_user_preference(
         user_id=update.effective_user.id,
         category_id=category_id,
