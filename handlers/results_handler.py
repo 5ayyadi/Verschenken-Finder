@@ -1,4 +1,4 @@
-from telegram import Update, ReplyKeyboardRemove
+from telegram import Update
 from telegram.ext import ContextTypes, ConversationHandler
 from core.redis_client import RedisClient
 from utils.format_prefs import preference_id_to_name
@@ -6,38 +6,81 @@ from utils.format_prefs import preference_id_to_name
 
 async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Display the gathered info and end the conversation."""
-    zip_code = context.user_data.get("zip_code", "")
-    category_id = context.user_data.get("category_id", "")
-    sub_category_id = context.user_data.get("sub_category_id", "")
-    state_id = context.user_data.get("state_id", "")
-    city_id = context.user_data.get("city_id", "")
 
-    preferences = RedisClient.add_user_preference(
-        user_id=update.effective_user.id,
-        category_id=category_id,
-        sub_category_id=sub_category_id,
-        state_id=state_id,
-        city_id=city_id)
+    # Handle callback query (inline button press)
+    if update.callback_query:
+        query = update.callback_query
+        await query.answer()
 
-    RedisClient.set_chat_ids(
-        user_id=update.effective_user.id,
-        category_id=category_id,
-        sub_category_id=sub_category_id,
-        state_id=state_id,
-        city_id=city_id
-    )
+        if query.data == "done":
+            # Process the results
+            zip_code = context.user_data.get("zip_code", "")
+            category_id = context.user_data.get("category_id", "")
+            sub_category_id = context.user_data.get("sub_category_id", "")
+            state_id = context.user_data.get("state_id", "")
+            city_id = context.user_data.get("city_id", "")
 
-    reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
-    reply_text += "Here are your preferences:\n\n"
-    reply_text += "\n".join(
-        f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
+            preferences = RedisClient.add_user_preference(
+                user_id=update.effective_user.id,
+                category_id=category_id,
+                sub_category_id=sub_category_id,
+                state_id=state_id,
+                city_id=city_id)
 
-    await update.message.reply_text(
-        reply_text,
-        reply_markup=ReplyKeyboardRemove(),
-    )
+            RedisClient.set_chat_ids(
+                user_id=update.effective_user.id,
+                category_id=category_id,
+                sub_category_id=sub_category_id,
+                state_id=state_id,
+                city_id=city_id
+            )
 
-    # clear the user_data
-    context.user_data.clear()
+            reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
+            reply_text += "Here are your preferences:\n\n"
+            reply_text += "\n".join(
+                f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
 
-    return ConversationHandler.END
+            await query.edit_message_text(reply_text)
+
+            # clear the user_data
+            context.user_data.clear()
+
+            return ConversationHandler.END
+        else:
+            await query.edit_message_text("❌ Invalid action. Please try again.")
+            return ConversationHandler.END
+
+    # Handle text message (for backwards compatibility)
+    else:
+        zip_code = context.user_data.get("zip_code", "")
+        category_id = context.user_data.get("category_id", "")
+        sub_category_id = context.user_data.get("sub_category_id", "")
+        state_id = context.user_data.get("state_id", "")
+        city_id = context.user_data.get("city_id", "")
+
+        preferences = RedisClient.add_user_preference(
+            user_id=update.effective_user.id,
+            category_id=category_id,
+            sub_category_id=sub_category_id,
+            state_id=state_id,
+            city_id=city_id)
+
+        RedisClient.set_chat_ids(
+            user_id=update.effective_user.id,
+            category_id=category_id,
+            sub_category_id=sub_category_id,
+            state_id=state_id,
+            city_id=city_id
+        )
+
+        reply_text = "Your search preferences have been saved successfully! 🎉\n\n"
+        reply_text += "Here are your preferences:\n\n"
+        reply_text += "\n".join(
+            f"📌 {r}" for r in preference_id_to_name(preferences, pretify=True))
+
+        await update.message.reply_text(reply_text)
+
+        # clear the user_data
+        context.user_data.clear()
+
+        return ConversationHandler.END
