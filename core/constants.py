@@ -51,11 +51,17 @@ USER_PREFERENCES_DB = 0
 CHAT_IDS_DB = 1
 # user -> list of sent offer_ids
 SENT_OFFERS_TRACKER_DB = 2
+# user_preference -> timestamp of last "no offers" notification
+NO_OFFERS_NOTIFICATION_DB = 3
 
-CELERY_BROKER_DB = 3
+CELERY_BROKER_DB = 4
 
 # Celery Task Names and Intervals
 GET_OFFERS_TASK = "workers.offers_tasks.get_offers"
 SEND_OFFERS_TASK = "workers.offers_tasks.send_offers"
 GET_OFFERS_INTERVAL = 60   # 5 minutes
-SEND_OFFERS_INTERVAL = 65 # 1 hour
+SEND_OFFERS_INTERVAL = 65  # 1 hour
+
+# "No offers" notification settings
+# Send "no offers" notification every 24 hours maximum
+NO_OFFERS_NOTIFICATION_INTERVAL_HOURS = 24
