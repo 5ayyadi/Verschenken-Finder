@@ -45,6 +45,13 @@ async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                 context.user_data["state"]).get("cities").get(city)
             logger.info(f"User selected city: {city}")
 
+        elif query.data == "confirm_zipcode":
+            # User confirmed zipcode selection, proceed to category or results
+            if context.user_data.get("category") is None:
+                return await show_category_selection(update, context)
+            else:
+                return RESULTS
+                
         elif query.data == "cancel":
             await query.edit_message_text("Operation canceled. /start to start over.")
             context.user_data.clear()
@@ -194,15 +201,20 @@ async def handle_zipcode_search(update: Update, context: ContextTypes.DEFAULT_TY
         
         logger.info(f"User found city via zipcode {zipcode}: {city}, {state}")
         
+        # Create confirmation buttons
+        keyboard = [
+            [InlineKeyboardButton("✅ Yes, Proceed", callback_data="confirm_zipcode")],
+            [InlineKeyboardButton("❌ No, Choose Different", callback_data="back_to_state")]
+        ]
+        markup = InlineKeyboardMarkup(keyboard)
+        
         await update.message.reply_text(
-            f"✅ Found via zipcode {zipcode}:\n🏙️ {city}, {state}\n\nProceed with this location?"
+            f"✅ Found via zipcode {zipcode}:\n🏙️ {city}, {state}\n\nProceed with this location?",
+            reply_markup=markup
         )
         
-        # Continue to category selection if not already selected
-        if context.user_data.get("category") is None:
-            return await show_category_selection(update, context)
-        else:
-            return RESULTS
+        # Wait for user confirmation
+        return CITY
             
     else:
         await update.message.reply_text(
