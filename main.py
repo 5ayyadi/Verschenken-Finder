@@ -13,12 +13,13 @@ from handlers import (
     sub_category,
     state,
     city,
+    price_range,
     results,
     cancel,
     error_handler,
     debug,
 )
-from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
+from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, PRICE_RANGE, RESULTS
 from core.mongo_client import MongoDBClient
 from core.redis_client import RedisClient
 
@@ -129,6 +130,12 @@ def main() -> None:
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
+            ],
+            PRICE_RANGE: [
+                CallbackQueryHandler(price_range, pattern="^price_"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, price_range),
+                MessageHandler(filters.Regex("^Cancel$"), cancel),
             ],
             RESULTS: [
                 CallbackQueryHandler(results, pattern="^done$"),

@@ -22,8 +22,8 @@ with open(os.path.join(os.path.dirname(__file__), "../data/zipcodes.json"), "r",
     ZIP_DICT = json.load(zip_file)
 
 # States of the conversation
-CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS = range(6)
-REMOVE = 6
+CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, PRICE_RANGE, RESULTS = range(7)
+REMOVE = 7
 
 
 # General keyboard
@@ -58,4 +58,4 @@ CELERY_BROKER_DB = 3
 GET_OFFERS_TASK = "workers.offers_tasks.get_offers"
 SEND_OFFERS_TASK = "workers.offers_tasks.send_offers"
 GET_OFFERS_INTERVAL = 60   # 5 minutes
-SEND_OFFERS_INTERVAL = 65 # 1 hour
+SEND_OFFERS_INTERVAL = 65  # 1 hour

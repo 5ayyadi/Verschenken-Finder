@@ -1,7 +1,7 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from utils.pagination import pagination
-from core.constants import RESULTS, CITY, CATEGORIES_DICT, CATEGORY, CITIES_DICT
+from core.constants import RESULTS, CITY, CATEGORIES_DICT, CATEGORY, CITIES_DICT, PRICE_RANGE
 
 
 async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -97,15 +97,24 @@ async def city(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             await update.message.reply_text("📂 Please choose a category:", reply_markup=categories_markup)
         return CATEGORY
 
-    # All options selected - show final action
-    keyboard = [[InlineKeyboardButton("✅ Done", callback_data="done")]]
+    # All options selected - now ask for price
+    keyboard = [
+        [InlineKeyboardButton("🆓 Free items only",
+                              callback_data="price_free")],
+        [InlineKeyboardButton("💰 Up to €20", callback_data="price_20")],
+        [InlineKeyboardButton("💰 Up to €50", callback_data="price_50")],
+        [InlineKeyboardButton("💰 Up to €100", callback_data="price_100")],
+        [InlineKeyboardButton("✏️ Enter custom price",
+                              callback_data="price_custom")],
+        [InlineKeyboardButton("❌ Cancel", callback_data="cancel")]
+    ]
     markup = InlineKeyboardMarkup(keyboard)
 
     if update.callback_query:
-        await update.callback_query.edit_message_text("✅ You have selected all options. Please choose an action:", reply_markup=markup)
+        await update.callback_query.edit_message_text("💰 Please choose a price range or enter a custom amount:", reply_markup=markup)
     else:
-        await update.message.reply_text("✅ You have selected all options. Please choose an action:", reply_markup=markup)
-    return RESULTS
+        await update.message.reply_text("💰 Please choose a price range or enter a custom amount:", reply_markup=markup)
+    return PRICE_RANGE
 
 
 def create_cities_pagination(page_number, state):

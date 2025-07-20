@@ -19,6 +19,8 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             sub_category_id = context.user_data.get("sub_category_id", "")
             state_id = context.user_data.get("state_id", "")
             city_id = context.user_data.get("city_id", "")
+            max_price = context.user_data.get("max_price", 0)
+            price_text = context.user_data.get("price_text", "Free items only")
 
             preferences = RedisClient.add_user_preference(
                 user_id=update.effective_user.id,
@@ -44,6 +46,9 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             reply_text += "\n".join(
                 f"📌 {r}" for r in valid_preferences)
 
+            if price_text:
+                reply_text += f"\n💰 Price range: {price_text}"
+
             await query.edit_message_text(reply_text)
 
             # clear the user_data
@@ -61,6 +66,8 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         sub_category_id = context.user_data.get("sub_category_id", "")
         state_id = context.user_data.get("state_id", "")
         city_id = context.user_data.get("city_id", "")
+        max_price = context.user_data.get("max_price", 0)
+        price_text = context.user_data.get("price_text", "Free items only")
 
         preferences = RedisClient.add_user_preference(
             user_id=update.effective_user.id,
@@ -85,6 +92,9 @@ async def results(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         reply_text += "Here are your preferences:\n\n"
         reply_text += "\n".join(
             f"📌 {r}" for r in valid_preferences)
+
+        if price_text:
+            reply_text += f"\n💰 Price range: {price_text}"
 
         await update.message.reply_text(reply_text)
 

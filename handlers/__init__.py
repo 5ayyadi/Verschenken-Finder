@@ -4,6 +4,7 @@ from handlers.category_handler import category
 from handlers.sub_category_handler import sub_category
 from handlers.state_handler import state
 from handlers.city_handler import city
+from handlers.price_range_handler import price_range
 from handlers.results_handler import results
 from handlers.debug_handler import debug
 from handlers.cancel_handler import cancel

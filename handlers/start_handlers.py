@@ -29,7 +29,7 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                               callback_data="select_location")]
     ]
     markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text("Please choose a category or state:", reply_markup=markup)
+    await update.message.reply_text("Please choose a category or location:", reply_markup=markup)
     return CHOOSING
 
 
