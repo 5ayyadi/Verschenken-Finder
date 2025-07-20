@@ -5,6 +5,9 @@ from core.constants import CHOOSING, REMOVE
 from core.redis_client import RedisClient
 from utils.format_prefs import preference_id_to_name
 from telegram.ext import ConversationHandler
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -22,6 +25,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Add a filter preference."""
+    logger.info("User started /add command - showing category/location selection")
+    
     keyboard = [
         [InlineKeyboardButton("📂 Select Category",
                               callback_data="select_category")],
@@ -30,6 +35,8 @@ async def add(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     ]
     markup = InlineKeyboardMarkup(keyboard)
     await update.message.reply_text("Please choose a category or state:", reply_markup=markup)
+    
+    logger.info("Add command completed - returning CHOOSING state")
     return CHOOSING
 
 

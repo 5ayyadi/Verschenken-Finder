@@ -8,3 +8,5 @@ from handlers.results_handler import results
 from handlers.debug_handler import debug
 from handlers.cancel_handler import cancel
 from handlers.error_handler import error_handler
+from handlers.back_handler import back_to_choosing, back_to_category, back_to_state
+from handlers.preferences_handler import view_preferences, clear_all_preferences, confirm_clear_all_preferences

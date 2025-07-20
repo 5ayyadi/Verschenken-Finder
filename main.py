@@ -17,6 +17,12 @@ from handlers import (
     cancel,
     error_handler,
     debug,
+    back_to_choosing,
+    back_to_category,
+    back_to_state,
+    view_preferences,
+    clear_all_preferences,
+    confirm_clear_all_preferences,
 )
 from core.constants import REMOVE, TOKEN, CHOOSING, CATEGORY, SUB_CATEGORY, STATE, CITY, RESULTS
 from core.mongo_client import MongoDBClient
@@ -39,6 +45,7 @@ async def set_bot_commands(application):
         BotCommand("add", "Add an item"),
         BotCommand("remove", "Remove an item"),
         BotCommand("show", "Show results"),
+        BotCommand("preferences", "View and manage preferences"),
         BotCommand("reset", "Reset data"),
     ]
     await application.bot.set_my_commands(commands)
@@ -68,6 +75,7 @@ def main() -> None:
     # Add conversation handler with 6 states
     start_handler = CommandHandler("start", start)
     results_handler = CommandHandler("show", results)
+    preferences_handler = CommandHandler("preferences", view_preferences)
     # remove_handler = CommandHandler("remove", remove)
     remove_handler = ConversationHandler(
         entry_points=[CommandHandler("remove", remove)],
@@ -97,13 +105,13 @@ def main() -> None:
             CHOOSING: [
                 CallbackQueryHandler(choosing, pattern="^select_"),
                 CallbackQueryHandler(cancel, pattern="^cancel$"),
-                CallbackQueryHandler(results, pattern="^reset_confirm$"),
-                CallbackQueryHandler(cancel, pattern="^reset_cancel$"),
                 MessageHandler(filters.Regex(
                     "^Select Category|Select Location$"), choosing),
             ],
             CATEGORY: [
                 CallbackQueryHandler(category, pattern="^category_"),
+                CallbackQueryHandler(results, pattern="^done$"),
+                CallbackQueryHandler(back_to_choosing, pattern="^back_to_choosing$"),
                 CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
@@ -112,6 +120,8 @@ def main() -> None:
             SUB_CATEGORY: [
                 CallbackQueryHandler(
                     sub_category, pattern="^(sub_all_|subcategory_)"),
+                CallbackQueryHandler(results, pattern="^done$"),
+                CallbackQueryHandler(back_to_category, pattern="^back_to_category$"),
                 CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
@@ -119,6 +129,8 @@ def main() -> None:
             ],
             STATE: [
                 CallbackQueryHandler(state, pattern="^state_"),
+                CallbackQueryHandler(results, pattern="^done$"),
+                CallbackQueryHandler(back_to_choosing, pattern="^back_to_choosing$"),
                 CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
@@ -126,6 +138,8 @@ def main() -> None:
             ],
             CITY: [
                 CallbackQueryHandler(city, pattern="^(city_|cancel)"),
+                CallbackQueryHandler(results, pattern="^done$"),
+                CallbackQueryHandler(back_to_state, pattern="^back_to_state$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
@@ -145,6 +159,7 @@ def main() -> None:
     application.add_handler(pref_handler)
     application.add_handler(start_handler)
     application.add_handler(results_handler)
+    application.add_handler(preferences_handler)
     application.add_handler(remove_handler)
     application.add_handler(reset_handler)
 

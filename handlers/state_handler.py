@@ -1,6 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from core.constants import CITY, CITIES_DICT, STATE, CHOOSING, ZIP_DICT
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def zipcode(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -47,10 +50,15 @@ async def state(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         if query.data.startswith("state_"):
             state = query.data.replace("state_", "")
+            logger.info(f"User selected state: {state}")
         elif query.data == "cancel":
             await query.edit_message_text("Operation canceled. /start to start over.")
             context.user_data.clear()
             return CHOOSING
+        elif query.data == "back_to_choosing":
+            # Import here to avoid circular imports
+            from handlers.back_handler import back_to_choosing
+            return await back_to_choosing(update, context)
         else:
             await query.edit_message_text("Invalid choice. Please try again.")
             return STATE
@@ -93,16 +101,27 @@ async def state(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
             cities_buttons.append([InlineKeyboardButton(
                 "▶️ Next Page", callback_data="city_next_page")])
 
-        # Add cancel button
-        cities_buttons.append(
-            [InlineKeyboardButton("❌ Cancel", callback_data="cancel")])
+        # Add done, back and cancel buttons
+        cities_buttons.append([
+            InlineKeyboardButton("✅ Done", callback_data="done"),
+            InlineKeyboardButton("⬅️ Back", callback_data="back_to_choosing"),
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel")
+        ])
 
         cities_markup = InlineKeyboardMarkup(cities_buttons)
 
         if update.callback_query:
-            await update.callback_query.edit_message_text(f"✅ You chose {state}\n🏙️ Please choose a city:", reply_markup=cities_markup)
+            await update.callback_query.edit_message_text(
+                f"✅ You chose {state}\n🏙️ Choose a city below OR type:\n"
+                f"• City name (e.g., 'Mainz')\n• 5-digit zipcode (e.g., '55116')", 
+                reply_markup=cities_markup
+            )
         else:
-            await update.message.reply_text(f"✅ You chose {state}\n🏙️ Please choose a city:", reply_markup=cities_markup)
+            await update.message.reply_text(
+                f"✅ You chose {state}\n🏙️ Choose a city below OR type:\n"
+                f"• City name (e.g., 'Mainz')\n• 5-digit zipcode (e.g., '55116')", 
+                reply_markup=cities_markup
+            )
         return CITY
     else:
         if update.callback_query:

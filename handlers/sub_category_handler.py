@@ -1,6 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from core.constants import STATE, RESULTS, SUB_CATEGORY, CATEGORIES_DICT, CITIES_DICT
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def sub_category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -14,17 +17,23 @@ async def sub_category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
         if query.data.startswith("sub_all_"):
             category = query.data.replace("sub_all_", "")
             # Don't set specific sub-category for "All Offers"
+            logger.info(f"User selected all subcategories for category: {category}")
 
         elif query.data.startswith("subcategory_"):
             sub_category = query.data.replace("subcategory_", "")
             context.user_data["sub_category"] = sub_category
             context.user_data["sub_category_id"] = CATEGORIES_DICT.get(
                 context.user_data["category"]).get("subcategories").get(sub_category)
+            logger.info(f"User selected subcategory: {sub_category}")
 
         elif query.data == "cancel":
             await query.edit_message_text("Operation canceled. /start to start over.")
             context.user_data.clear()
             return RESULTS
+        elif query.data == "back_to_category":
+            # Import here to avoid circular imports
+            from handlers.back_handler import back_to_category
+            return await back_to_category(update, context)
         else:
             await query.edit_message_text("❌ Invalid choice. Please try again.")
             return SUB_CATEGORY
@@ -53,9 +62,12 @@ async def sub_category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> in
                     states_list[i + 1], callback_data=f"state_{states_list[i + 1]}"))
             states_buttons.append(row)
 
-        # Add cancel button
-        states_buttons.append(
-            [InlineKeyboardButton("❌ Cancel", callback_data="cancel")])
+        # Add done, back and cancel buttons
+        states_buttons.append([
+            InlineKeyboardButton("✅ Done", callback_data="done"),
+            InlineKeyboardButton("⬅️ Back", callback_data="back_to_category"),
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel")
+        ])
         states_markup = InlineKeyboardMarkup(states_buttons)
 
         if update.callback_query:

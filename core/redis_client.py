@@ -113,9 +113,44 @@ class RedisClient:
 
     @classmethod
     def remove_all_user_preferences(cls, user_id: str):
-        cls.get_db(USER_PREFERENCES_DB).delete(user_id)
-        cls.add_user_preference(user_id)
-        # TODO get user prefrences and remove the user id from the chat ids db
+        """Remove all preferences for a user and clean up related data."""
+        try:
+            # Get current preferences before deletion for cleanup
+            current_preferences = cls.get_user_preference(user_id)
+            
+            # Remove user from all chat_ids mappings
+            for pref in current_preferences:
+                try:
+                    # Construct the key format: state_city#category_subcategory  
+                    state_city_parts = []
+                    if pref.get('state_id'):
+                        state_city_parts.append(pref['state_id'])
+                    if pref.get('city_id'):
+                        state_city_parts.append(pref['city_id'])
+                    
+                    category_subcategory_parts = []
+                    if pref.get('category_id'):
+                        category_subcategory_parts.append(pref['category_id'])
+                    if pref.get('sub_category_id'):
+                        category_subcategory_parts.append(pref['sub_category_id'])
+                    
+                    # Remove user from chat_ids mappings
+                    state_city = "_".join(state_city_parts)
+                    category_subcategory = "_".join(category_subcategory_parts)
+                    
+                    # Call remove_chat_id with correct parameter order
+                    cls.remove_chat_id(category_subcategory, state_city, user_id)
+                    
+                except Exception as e:
+                    logging.error(f"Error removing user {user_id} from chat_ids for preference {pref}: {e}")
+            
+            # Delete all user preferences
+            cls.get_db(USER_PREFERENCES_DB).delete(user_id)
+            
+            logging.info(f"Removed all preferences for user {user_id}")
+            
+        except Exception as e:
+            logging.error(f"Error removing all preferences for user {user_id}: {e}")
 
     # a function to store category and city id as key and
     # related chat_ids list as value
@@ -141,20 +176,24 @@ class RedisClient:
 
     @classmethod
     def remove_chat_id(cls, category_subcategory_id: str, state_id: str, chat_id: str):
-        if category_subcategory_id is None:
-            category_subcategory_id = ""
-        if state_id is None:
-            state_id = ""
-        key = f"{state_id}#{category_subcategory_id}"
-        existing_value = cls.get_db(CHAT_IDS_DB).get(name=key)
-        if existing_value is not None:
-            chat_ids = set(existing_value)
-            print(chat_id in chat_ids)
-            print(chat_ids)
-            print(chat_id)
-            if chat_id in chat_ids:
-                chat_ids.remove(chat_id)
-                cls.get_db(CHAT_IDS_DB).set(name=key, value=chat_ids)
+        """Remove a chat_id from the chat_ids set for a given preference key."""
+        try:
+            if category_subcategory_id is None:
+                category_subcategory_id = ""
+            if state_id is None:
+                state_id = ""
+            key = f"{state_id}#{category_subcategory_id}"
+            
+            # Use srem to remove from set (not get and set)
+            removed_count = cls.get_db(CHAT_IDS_DB).srem(key, chat_id)
+            
+            if removed_count > 0:
+                logging.info(f"Removed chat_id {chat_id} from key {key}")
+            else:
+                logging.warning(f"Chat_id {chat_id} was not found in key {key}")
+                
+        except Exception as e:
+            logging.error(f"Error removing chat_id {chat_id} from key {key}: {e}")
 
     @classmethod
     def get_chat_ids(cls, location_category_id: str) -> set[str]:

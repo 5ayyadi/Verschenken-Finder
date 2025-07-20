@@ -1,6 +1,9 @@
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ContextTypes
 from core.constants import SUB_CATEGORY, CATEGORIES_DICT, CATEGORY
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
@@ -13,10 +16,15 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
 
         if query.data.startswith("category_"):
             category = query.data.replace("category_", "")
+            logger.info(f"User selected category: {category}")
         elif query.data == "cancel":
             await query.edit_message_text("Operation canceled. /start to start over.")
             context.user_data.clear()
             return CATEGORY
+        elif query.data == "back_to_choosing":
+            # Import here to avoid circular imports
+            from handlers.back_handler import back_to_choosing
+            return await back_to_choosing(update, context)
         else:
             await query.edit_message_text("❌ Invalid choice. Please try again.")
             return CATEGORY
@@ -49,9 +57,12 @@ async def category(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
                     sub_categories[i + 1], callback_data=f"subcategory_{sub_categories[i + 1]}"))
             sub_categories_buttons.append(row)
 
-        # Add cancel button
-        sub_categories_buttons.append(
-            [InlineKeyboardButton("❌ Cancel", callback_data="cancel")])
+        # Add done, back and cancel buttons
+        sub_categories_buttons.append([
+            InlineKeyboardButton("✅ Done", callback_data="done"),
+            InlineKeyboardButton("⬅️ Back", callback_data="back_to_choosing"),
+            InlineKeyboardButton("❌ Cancel", callback_data="cancel")
+        ])
 
         sub_categories_markup = InlineKeyboardMarkup(sub_categories_buttons)
 
