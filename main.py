@@ -1,11 +1,12 @@
 import logging
 from telegram import Update, BotCommand
-from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, filters
+from telegram.ext import ApplicationBuilder, CommandHandler, ConversationHandler, MessageHandler, CallbackQueryHandler, filters
 from handlers import (
     start,
     add,
     remove,
     confirm_remove,
+    confirm_reset,
     reset,
     choosing,
     category,
@@ -71,44 +72,74 @@ def main() -> None:
     remove_handler = ConversationHandler(
         entry_points=[CommandHandler("remove", remove)],
         states={
-            REMOVE: [MessageHandler(
-                filters.TEXT & ~filters.COMMAND, confirm_remove)]
+            REMOVE: [
+                CallbackQueryHandler(confirm_remove, pattern="^remove_"),
+                CallbackQueryHandler(cancel, pattern="^cancel_remove$"),
+                MessageHandler(filters.TEXT & ~filters.COMMAND, confirm_remove)
+            ]
         },
         fallbacks=[],
     )
-    reset_handler = CommandHandler("reset", reset)
+    reset_handler = ConversationHandler(
+        entry_points=[CommandHandler("reset", reset)],
+        states={
+            CHOOSING: [
+                CallbackQueryHandler(confirm_reset, pattern="^reset_confirm$"),
+                CallbackQueryHandler(confirm_reset, pattern="^reset_cancel$"),
+            ]
+        },
+        fallbacks=[],
+    )
     pref_handler = ConversationHandler(
         allow_reentry=True,
         entry_points=[CommandHandler("add", add)],
         states={
-            CHOOSING: [MessageHandler(filters.Regex("^Select Category|Select Location$"), choosing),],
+            CHOOSING: [
+                CallbackQueryHandler(choosing, pattern="^select_"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
+                CallbackQueryHandler(results, pattern="^reset_confirm$"),
+                CallbackQueryHandler(cancel, pattern="^reset_cancel$"),
+                MessageHandler(filters.Regex(
+                    "^Select Category|Select Location$"), choosing),
+            ],
             CATEGORY: [
+                CallbackQueryHandler(category, pattern="^category_"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, category),
             ],
             SUB_CATEGORY: [
+                CallbackQueryHandler(
+                    sub_category, pattern="^(sub_all_|subcategory_)"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, sub_category),
             ],
             STATE: [
+                CallbackQueryHandler(state, pattern="^state_"),
+                CallbackQueryHandler(cancel, pattern="^cancel$"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, state),
-
             ],
             CITY: [
+                CallbackQueryHandler(city, pattern="^(city_|cancel)"),
                 MessageHandler(filters.Regex("^Cancel$"), cancel),
                 MessageHandler(filters.Regex("^Done$"), results),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, city),
             ],
             RESULTS: [
+                CallbackQueryHandler(results, pattern="^done$"),
                 MessageHandler(filters.TEXT & ~filters.COMMAND, results),
             ],
         },
-        fallbacks=[MessageHandler(filters.Regex("^Cancel$"), cancel), MessageHandler(filters.Regex("^Done$"), results),
-                   ],
+        fallbacks=[
+            CallbackQueryHandler(cancel, pattern="^cancel$"),
+            MessageHandler(filters.Regex("^Cancel$"), cancel),
+            MessageHandler(filters.Regex("^Done$"), results),
+        ],
     )
 
     application.add_handler(pref_handler)
